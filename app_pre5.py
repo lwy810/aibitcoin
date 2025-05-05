@@ -429,7 +429,6 @@ def check_orders():
 
         # 1. 주문 상태 확인
         try:
-            """
             order = upbit.get_order(uuid)
 
             # 체결된 경우
@@ -457,10 +456,6 @@ def check_orders():
 
                 # 잔고 출력
                 get_balance()
-            """
-
-            # 테스트용 - 실제 API 호출이 없으므로 이 부분 생략
-            pass
 
         except Exception as e:
             logger.error(f"주문 상태 확인 중 오류: {str(e)}")
@@ -493,8 +488,7 @@ def check_price_and_trade():
             buy_usdc(level)
 
         # 매도 조건: 현재 가격이 매도가 이상이고 이미 매수되었지만 아직 매도되지 않은 경우 (주문 없는 경우)
-        elif current_price >= grid['sell_price'] and grid['buy_filled'] and not grid['sell_filled'] and not grid[
-            'sell_order_id']:
+        elif current_price >= grid['sell_price'] and grid['buy_filled'] and not grid['sell_filled'] and not grid['sell_order_id']:
             logger.info(f"레벨 {level} 매도 조건 충족: 현재가({current_price:,.2f}원) >= 매도가({grid['sell_price']:,.2f}원)")
             sell_usdc(level)
 
@@ -675,7 +669,7 @@ def run_trading():
     logger.info(f"미체결 주문 취소 시간: {CANCEL_TIMEOUT}초")
 
     # 이전 상태 로드 시도
-    loaded_previous_state = None # load_trading_state()
+    loaded_previous_state = load_trading_state()
 
     # 새 상태 생성 (이전 상태가 없는 경우)
     if not loaded_previous_state:
