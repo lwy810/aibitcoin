@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")
 # 거래 설정
 TICKER = "KRW-USDT"  # 비트코인 티커
 BASE_PRICE = None  # 초기 기준 가격 (시장 가격으로 설정됨)
-PRICE_CHANGE = 1  # 가격 변동 기준 (원)
+PRICE_CHANGE = 2  # 가격 변동 기준 (원)
 ORDER_AMOUNT = 6000  # 차수별 주문 금액 (원)
 MAX_GRID_COUNT = 10  # 최대 분할 매수/매도 차수
 CHECK_INTERVAL = 10  # 가격 확인 간격 (초)
