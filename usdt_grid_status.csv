@@ -1,0 +1,11 @@
+level,buy_price,sell_price,volume,status,buy_filled,sell_filled,buy_order_id,sell_order_id
+1,1411.0,1418.0,7.087172218284905,waiting,False,False,buy-1-1747427552,
+2,1404.0,1411.0,7.122507122507122,waiting,False,False,buy-2-1747427552,
+3,1397.0,1404.0,7.158196134574087,waiting,False,False,,
+4,1390.0,1397.0,7.194244604316546,waiting,False,False,,
+5,1383.0,1390.0,7.230657989877079,waiting,False,False,,
+6,1376.0,1383.0,7.267441860465116,waiting,False,False,,
+7,1369.0,1376.0,7.304601899196494,waiting,False,False,,
+8,1362.0,1369.0,7.342143906020558,waiting,False,False,,
+9,1355.0,1362.0,7.380073800738008,waiting,False,False,,
+10,1348.0,1355.0,7.4183976261127595,waiting,False,False,,
