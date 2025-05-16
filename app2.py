@@ -17,7 +17,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger()
 
-
 # .env 파일에서 환경변수 로드
 load_dotenv()
 
@@ -50,9 +49,10 @@ upbit = pyupbit.Upbit(ACCESS_KEY, SECRET_KEY)
 # 가상 잔고 정보를 저장할 전역 변수
 virtual_balance = {
     "KRW": 1000000,  # 초기 100만원
-    "BTC": 0,        # 초기 0 BTC
+    "BTC": 0,  # 초기 0 BTC
     "BTC_AVG_PRICE": 0  # 초기 평균 매수가 0원
 }
+
 
 def get_current_price():
     """현재 가격 조회"""
@@ -132,6 +132,7 @@ def get_current_price():
             return current_price
         return None
 
+
 def get_balance():
     """계좌 잔고 조회"""
     logger.info("get_balance")
@@ -189,6 +190,7 @@ def get_balance():
     except Exception as e:
         logger.error(f"잔고 조회 중 오류 발생: {str(e)}")
         return None
+
 
 def create_grid_orders(input_base_price=None):
     """분할 매수/매도 그리드 주문 생성"""
@@ -274,83 +276,42 @@ def buy_btc(grid_level):
         order_amount = grid['order_amount']
         volume_without_fee = order_amount / price
         fee_amount = order_amount * FEE_RATE
-        actual_volume = volume_without_fee * (1 - FEE_RATE)  # 수수료를 고려한 실제 수량
 
+        # UUID 생성 및 주문 정보 저장 (테스트 모드와 실제 모드 모두 동일하게 처리)
         if not TEST_MODE:
             # 실제 주문 실행
             order = upbit.buy_limit_order(TICKER, price, volume_without_fee)
             if order and 'uuid' in order:
                 uuid = order['uuid']
-                grid['buy_order_id'] = uuid
-                grid['buy_order_time'] = datetime.now()
-
-                # 활성 주문 목록에 추가
-                active_orders[uuid] = {
-                    'grid_level': grid_level,
-                    'type': 'buy',
-                    'price': price,
-                    'volume': volume_without_fee,
-                    'timestamp': datetime.now()
-                }
-
-                logger.info(f"매수 주문 완료: 주문번호 {uuid}")
-                return True
             else:
                 logger.error(f"매수 주문 실패: {order}")
                 return False
         else:
-            # 테스트용: 주문 생성 시뮬레이션
+            # 테스트용: 주문 UUID 생성
             uuid = f"buy-{grid_level}-{int(time.time())}"
-            grid['buy_order_id'] = uuid
-            grid['buy_order_time'] = datetime.now()
 
-            # 활성 주문 목록에 추가
-            active_orders[uuid] = {
-                'grid_level': grid_level,
-                'type': 'buy',
-                'price': price,
-                'volume': volume_without_fee,
-                'timestamp': datetime.now()
-            }
+        # 그리드 정보 업데이트 (테스트 모드와 실제 모드 모두 동일하게 처리)
+        grid['buy_order_id'] = uuid
+        grid['buy_order_time'] = datetime.now()
 
-            logger.info(f"매수 주문 완료: 주문번호 {uuid}")
+        # 활성 주문 목록에 추가 (테스트 모드와 실제 모드 모두 동일하게 처리)
+        active_orders[uuid] = {
+            'grid_level': grid_level,
+            'type': 'buy',
+            'price': price,
+            'volume': volume_without_fee,
+            'timestamp': datetime.now()
+        }
 
-            # 테스트용: 즉시 체결된 것으로 처리
-            grid['buy_filled'] = True
-            grid['status'] = 'bought'
+        logger.info(f"매수 주문 완료: 주문번호 {uuid}")
 
-            # 거래 내역 저장
-            trade = {
-                'type': 'buy',
-                'grid_level': grid_level,
-                'price': price,
-                'amount': order_amount,
-                'volume': actual_volume,  # 수수료 적용된 수량
-                'fee': fee_amount,  # 수수료 금액
-                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'order_id': uuid
-            }
-            trade_history.append(trade)
-
-            # 활성 주문 목록에서 제거 (테스트용 - 즉시 체결 시)
-            if uuid in active_orders:
-                del active_orders[uuid]
-
-            # 테스트 모드에서 가상 잔고 업데이트
+        # 테스트 모드에서는 주문 금액만 가상 잔고에서 차감 (체결은 check_orders에서 처리)
+        if TEST_MODE:
+            # 주문 금액만큼 가상 잔고에서 예약 (실제 차감은 체결 시 처리)
             virtual_balance["KRW"] -= order_amount
-            new_btc = virtual_balance["BTC"] + actual_volume
-            new_avg_price = ((virtual_balance["BTC"] * virtual_balance["BTC_AVG_PRICE"]) + (
-                        actual_volume * price)) / new_btc if new_btc > 0 else 0
-            virtual_balance["BTC"] = new_btc
-            virtual_balance["BTC_AVG_PRICE"] = new_avg_price
+            logger.info(f"테스트 모드: 주문 금액 {order_amount:,}원 예약 (잔고: {virtual_balance['KRW']:,}원)")
 
-            # 로그 출력
-            logger.info(
-                f"레벨 {grid_level} {TICKER} 매수 완료: {actual_volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {order_amount:,}원, 수수료: {fee_amount:,.2f}원)")
-
-            # 잔고 출력
-            get_balance()
-            return True
+        return True
 
     except Exception as e:
         logger.error(f"매수 중 오류 발생: {str(e)}")
@@ -428,67 +389,12 @@ def sell_btc(grid_level):
             }
 
             logger.info(f"매도 주문 완료: 주문번호 {uuid}")
-
-            # 테스트용: 즉시 체결된 것으로 처리
-            grid['sell_filled'] = True
-            grid['status'] = 'sold'
-
-            # 수수료 계산
-            sell_amount = volume * price
-            fee_amount = sell_amount * FEE_RATE
-            amount = sell_amount - fee_amount  # 수수료를 제외한 실제 매도 금액
-
-            # 테스트 모드에서 가상 잔고 업데이트
-            virtual_balance["KRW"] += amount
-            virtual_balance["BTC"] -= volume
-
-            # BTC가 0이 되면 평균 매수가도 0으로 초기화
-            if virtual_balance["BTC"] <= 0:
-                virtual_balance["BTC"] = 0
-                virtual_balance["BTC_AVG_PRICE"] = 0
-
-            # 거래 내역 저장
-            trade = {
-                'type': 'sell',
-                'grid_level': grid_level,
-                'price': price,
-                'amount': amount,
-                'volume': volume,
-                'fee': fee_amount,  # 수수료 금액
-                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'order_id': uuid
-            }
-            trade_history.append(trade)
-
-            # 활성 주문 목록에서 제거 (테스트용 - 즉시 체결 시)
-            if uuid in active_orders:
-                del active_orders[uuid]
-
-            # 수익 계산
-            profit = amount - grid['order_amount']
-            profit_percentage = (profit / grid['order_amount']) * 100
-
-            # 로그 출력
-            logger.info(
-                f"레벨 {grid_level} {TICKER} 매도 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {amount:,.0f}원, 수수료: {fee_amount:,.2f}원)")
-            logger.info(f"레벨 {grid_level} 수익: {profit:+,.0f}원 ({profit_percentage:+.2f}%)")
-
-            # 그리드 초기화 (재사용 가능하도록)
-            grid['buy_filled'] = False
-            grid['sell_filled'] = False
-            grid['status'] = 'waiting'
-            grid['buy_order_id'] = None
-            grid['sell_order_id'] = None
-            grid['buy_order_time'] = None
-            grid['sell_order_time'] = None
-
-            # 잔고 출력
-            get_balance()
             return True
 
     except Exception as e:
         logger.error(f"매도 중 오류 발생: {str(e)}")
         return False
+
 
 def cancel_order(uuid):
     """주문 취소"""
@@ -518,6 +424,13 @@ def cancel_order(uuid):
 
                 # 해당 그리드 정보 가져오기
                 grid = grid_orders[grid_level - 1]
+
+                # 테스트 모드에서 취소 시 가상 잔고 복원
+                if order_type == 'buy':
+                    # 매수 주문 취소 시 원화 복원
+                    order_amount = price * volume
+                    virtual_balance["KRW"] += order_amount
+                    logger.info(f"테스트 모드: 취소된 매수 주문 금액 {order_amount:,}원 복원 (잔고: {virtual_balance['KRW']:,}원)")
 
                 # 그리드 상태 업데이트
                 if order_type == 'buy':
@@ -553,6 +466,7 @@ def cancel_order(uuid):
 def check_orders():
     """주문 상태 확인 및 업데이트"""
     logger.info("check_orders")
+    global virtual_balance
 
     # 현재 시간
     now = datetime.now()
@@ -565,6 +479,8 @@ def check_orders():
         grid_level = order_info['grid_level']
         order_type = order_info['type']
         order_time = order_info['timestamp']
+        price = order_info['price']
+        volume = order_info['volume']
 
         # 해당 그리드 정보 가져오기
         grid = grid_orders[grid_level - 1]
@@ -606,6 +522,114 @@ def check_orders():
                 else:
                     # 테스트용 - 실제 API 호출이 없으므로 이 부분 생략
                     pass
+            else:
+                # 테스트 모드에서 주문 체결 시뮬레이션
+                # 현재 가격과 주문 가격 비교하여 체결 여부 결정 또는 랜덤하게 체결 결정
+                # 이 예시에서는 주문 후 일정 시간이 지나면 체결되는 것으로 처리
+                time_diff = (now - order_time).total_seconds()
+                # 10초 후 체결되는 것으로 가정 (실제 환경에 맞게 조정 가능)
+                if time_diff > 10:
+                    if order_type == 'buy':
+                        # 매수 주문 체결 처리
+                        grid['buy_filled'] = True
+                        grid['status'] = 'bought'
+
+                        # 수수료 계산
+                        order_amount = price * volume
+                        fee_amount = order_amount * FEE_RATE
+
+                        # 테스트 모드에서 가상 잔고 업데이트
+                        # 원화는 이미 차감된 상태, BTC 추가
+                        virtual_balance["BTC"] += volume * (1 - FEE_RATE)
+
+                        # BTC 평균 매수가 업데이트
+                        if virtual_balance["BTC"] > 0:
+                            # 평균 매수가 계산 로직
+                            current_value = virtual_balance["BTC_AVG_PRICE"] * (
+                                        virtual_balance["BTC"] - volume * (1 - FEE_RATE))
+                            new_value = price * volume * (1 - FEE_RATE)
+                            virtual_balance["BTC_AVG_PRICE"] = (current_value + new_value) / virtual_balance["BTC"] if \
+                            virtual_balance["BTC"] > 0 else 0
+
+                        # 거래 내역 저장
+                        trade = {
+                            'type': 'buy',
+                            'grid_level': grid_level,
+                            'price': price,
+                            'amount': order_amount,
+                            'volume': volume * (1 - FEE_RATE),
+                            'fee': fee_amount,
+                            'timestamp': now.strftime('%Y-%m-%d %H:%M:%S'),
+                            'order_id': uuid
+                        }
+                        trade_history.append(trade)
+
+                        logger.info(f"레벨 {grid_level}의 매수 주문이 체결되었습니다: {uuid}")
+                        logger.info(
+                            f"매수 완료: {volume * (1 - FEE_RATE):.8f} {TICKER} (가격: {price:,.2f}원, 수수료: {fee_amount:,.2f}원)")
+
+                        # 활성 주문 목록에서 제거
+                        del active_orders[uuid]
+
+                        # 매수 주문이 체결되면 즉시 매도 주문 실행
+                        logger.info(f"레벨 {grid_level}의 매수 주문이 체결되었습니다. 매도 주문 실행")
+                        sell_btc(grid_level)
+
+                    else:  # sell
+                        # 매도 주문 체결 처리
+                        grid['sell_filled'] = True
+                        grid['status'] = 'sold'
+
+                        # 수수료 계산
+                        sell_amount = volume * price
+                        fee_amount = sell_amount * FEE_RATE
+                        amount = sell_amount - fee_amount  # 수수료를 제외한 실제 매도 금액
+
+                        # 테스트 모드에서 가상 잔고 업데이트
+                        virtual_balance["KRW"] += amount
+                        virtual_balance["BTC"] -= volume
+
+                        # BTC가 0이 되면 평균 매수가도 0으로 초기화
+                        if virtual_balance["BTC"] <= 0:
+                            virtual_balance["BTC"] = 0
+                            virtual_balance["BTC_AVG_PRICE"] = 0
+
+                        # 수익 계산
+                        profit = amount - grid['order_amount']
+                        profit_percentage = (profit / grid['order_amount']) * 100
+
+                        # 거래 내역 저장
+                        trade = {
+                            'type': 'sell',
+                            'grid_level': grid_level,
+                            'price': price,
+                            'amount': amount,
+                            'volume': volume,
+                            'fee': fee_amount,
+                            'timestamp': now.strftime('%Y-%m-%d %H:%M:%S'),
+                            'order_id': uuid
+                        }
+                        trade_history.append(trade)
+
+                        logger.info(f"레벨 {grid_level}의 매도 주문이 체결되었습니다: {uuid}")
+                        logger.info(
+                            f"매도 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {amount:,.0f}원, 수수료: {fee_amount:,.2f}원)")
+                        logger.info(f"레벨 {grid_level} 수익: {profit:+,.0f}원 ({profit_percentage:+.2f}%)")
+
+                        # 그리드 초기화 (재사용 가능하도록)
+                        grid['buy_filled'] = False
+                        grid['sell_filled'] = False
+                        grid['status'] = 'waiting'
+                        grid['buy_order_id'] = None
+                        grid['sell_order_id'] = None
+                        grid['buy_order_time'] = None
+                        grid['sell_order_time'] = None
+
+                        # 활성 주문 목록에서 제거
+                        del active_orders[uuid]
+
+                    # 잔고 출력
+                    get_balance()
 
         except Exception as e:
             logger.error(f"주문 상태 확인 중 오류: {str(e)}")
@@ -637,14 +661,8 @@ def check_price_and_trade():
             logger.info(f"레벨 {level} 매수 조건 충족: 현재가({current_price:,.2f}원) <= 매수가({grid['buy_price']:,.2f}원)")
             buy_success = buy_btc(level)
 
-            # 매수가 성공하면 즉시 매도 주문도 미리 걸어놓음
-            if buy_success and TEST_MODE:
-                # 테스트 모드에서는 매수가 즉시 체결되므로 바로 매도 주문 실행
-                logger.info(f"레벨 {level} 매수 성공. 매도 주문 실행")
-                sell_btc(level)
-            elif buy_success and not TEST_MODE:
-                # 실제 모드에서는 매수가 체결될 때까지 기다려야 하므로 여기서는 매도 주문을 실행하지 않음
-                # 대신 check_orders() 함수에서 매수 주문 체결 확인 후 매도 주문 실행하도록 수정 필요
+            # 매수 성공 로그만 남기고, 실제 모드와 테스트 모드 모두 check_orders에서 체결 처리
+            if buy_success:
                 logger.info(f"레벨 {level} 매수 주문 완료. 체결 후 자동으로 매도 주문이 실행됩니다.")
 
         # 매도 조건: 현재 가격이 매도가 이상이고 이미 매수되었지만 아직 매도되지 않은 경우 (주문 없는 경우)
@@ -652,6 +670,7 @@ def check_price_and_trade():
             'sell_order_id']:
             logger.info(f"레벨 {level} 매도 조건 충족: 현재가({current_price:,.2f}원) >= 매도가({grid['sell_price']:,.2f}원)")
             sell_btc(level)
+
 
 def save_trading_results():
     """거래 결과 저장"""
@@ -684,11 +703,13 @@ def save_trading_results():
             with open("btc_virtual_balance.csv", "w", encoding="utf-8") as f:
                 f.write("currency,balance,avg_price,timestamp\n")
                 f.write(f"KRW,{virtual_balance['KRW']},0,{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"{TICKER},{virtual_balance['BTC']},{virtual_balance['BTC_AVG_PRICE']},{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(
+                    f"{TICKER},{virtual_balance['BTC']},{virtual_balance['BTC_AVG_PRICE']},{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
         logger.info(f"거래 데이터가 CSV 파일에 저장되었습니다.")
     except Exception as e:
         logger.error(f"거래 결과 저장 중 오류 발생: {str(e)}")
+
 
 def cancel_all_orders():
     """모든 주문 취소"""
@@ -889,7 +910,7 @@ def run_trading():
         try:
             ticker_price = get_current_price()  #
 
-            input_base_price = ticker_price # 기준 가격을 현재 시장가 사용로 설정
+            input_base_price = ticker_price  # 기준 가격을 현재 시장가 사용로 설정
             # 그리드 주문 생성 (사용자 입력 기준가)
             if not create_grid_orders(input_base_price):
                 return
@@ -1029,6 +1050,7 @@ def run_trading():
         cancel_count = sum(1 for trade in trade_history if 'cancel' in trade['type'])
         logger.info(f"\n총 거래 횟수: {len(trade_history)}회")
         logger.info(f"매수: {buy_count}회, 매도: {sell_count}회, 취소: {cancel_count}회")
+
 
 # 메인 함수
 if __name__ == "__main__":
