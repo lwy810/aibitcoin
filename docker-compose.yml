@@ -1,0 +1,16 @@
+services:
+  trading_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: upbit_trading_bot:latest
+    container_name: upbit_trading_bot
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    environment:
+      - UPBIT_ACCESS_KEY=${UPBIT_ACCESS_KEY}
+      - UPBIT_SECRET_KEY=${UPBIT_SECRET_KEY}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      - TZ=Asia/Seoul
+    restart: unless-stopped

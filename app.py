@@ -5,8 +5,12 @@ import numpy as np
 from datetime import datetime
 from dotenv import load_dotenv
 import pyupbit
-import winsound  # Windows 사운드 모듈 추가
-import requests  # Discord Webhook을 위한 requests 모듈 추가
+import requests
+import sys
+
+# Windows 환경에서만 winsound 모듈 import
+if sys.platform == 'win32':
+    import winsound
 
 # .env 파일에서 환경변수 로드
 load_dotenv()
@@ -15,18 +19,18 @@ load_dotenv()
 ACCESS_KEY = os.environ.get("UPBIT_ACCESS_KEY")
 SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # Discord Webhook URL
-DISCORD_LOGGING = False  # Discord 로깅 활성화 여부
 
 # 거래 설정
-TICKER = "KRW-XRP"  # 테더 티커
-BASE_PRICE = None  # 초기 기준 가격 (현재가 + 5구간)
-PRICE_CHANGE = 2 # 가격 변동 기준 (1원)
+TICKER = "KRW-XRP"  # 코인 티커
+BASE_PRICE = None  # 초기 기준 가격 (기준가를 기준으로 가격을 낮추면서 구간(gid)를 만든다)
+PRICE_CHANGE = 4 # 가격 변동 기준 (2원)
 ORDER_AMOUNT = 5000  # 차수별 주문 금액 (1만원)
 MAX_GRID_COUNT = 10  # 최대 분할 매수/매도 차수 (10구간)
 CHECK_INTERVAL = 10  # 가격 확인 간격 (초)
 CANCEL_TIMEOUT = 3600  # 미체결 주문 취소 시간 (초, 1시간)
 TEST_MODE = False  # 테스트 모드 비활성화 (실거래 모드)
 FEE_RATE = 0.0005  # 거래 수수료 (0.05%)
+DISCORD_LOGGING = True  # Discord 로깅 활성화 여부
 
 # 전역 변수
 current_price = 0  # 현재 가격
@@ -46,16 +50,17 @@ virtual_balance = {
     "coin_avg_price": 0  # 초기 평균 매수가 0원
 }
 
-# 로깅 설정
-log_file = f"{TICKER.replace('KRW-', '').lower()}_grid_trade.log"
-
-class DiscordHandler(logging.Handler):
-    """Discord로 로그를 전송하는 핸들러"""
+class DiscordLogger:
+    """Discord로 로그를 전송하는 전용 로거"""
     def __init__(self, webhook_url):
-        super().__init__()
         self.webhook_url = webhook_url
+        self.enabled = bool(webhook_url)
 
-    def emit(self, record):
+    def send(self, message, level="INFO"):
+        """Discord로 메시지 전송"""
+        if not self.enabled:
+            return
+
         try:
             # 로그 레벨에 따른 색상 설정
             color = {
@@ -63,23 +68,30 @@ class DiscordHandler(logging.Handler):
                 'WARNING': 0xffff00,  # 노란색
                 'ERROR': 0xff0000,    # 빨간색
                 'CRITICAL': 0xff0000  # 빨간색
-            }.get(record.levelname, 0x808080)  # 기본 회색
+            }.get(level, 0x808080)  # 기본 회색
+
+            # 현재 한국 시간 (UTC+9)
+            kst_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
             # Discord 메시지 포맷
             payload = {
                 "embeds": [{
-                    "title": f"[{record.levelname}]",
-                    "description": record.getMessage(),
-                    "color": color,
-                    "timestamp": datetime.now().isoformat()
+                    "title": f"[{level}]",
+                    "description": f"{message}\n\n{kst_time} (KST)",
+                    "color": color
                 }]
             }
 
             # Discord로 전송
-            if self.webhook_url:
-                requests.post(self.webhook_url, json=payload)
+            requests.post(self.webhook_url, json=payload)
         except Exception as e:
             print(f"Discord 로그 전송 중 오류 발생: {str(e)}")
+
+# Discord 로거 인스턴스 생성
+discord_logger = DiscordLogger(DISCORD_WEBHOOK_URL)
+
+# 로깅 설정
+log_file = f"{TICKER.replace('KRW-', '').lower()}_grid_trade.log"
 
 # 기본 로깅 설정 (콘솔 출력용)
 logging.basicConfig(
@@ -97,17 +109,6 @@ file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
 file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', 
                                           datefmt='%Y-%m-%d %H:%M:%S'))
 logger.addHandler(file_handler)
-
-# Discord 핸들러 추가
-if DISCORD_WEBHOOK_URL and DISCORD_LOGGING:
-    discord_handler = DiscordHandler(DISCORD_WEBHOOK_URL)
-    discord_handler.setFormatter(logging.Formatter('%(message)s'))  # Discord에서는 시간이 자동으로 추가되므로 메시지만 전송
-    logger.addHandler(discord_handler)
-    logger.info("Discord 로깅이 활성화되었습니다.")
-elif not DISCORD_WEBHOOK_URL:
-    logger.warning("Discord Webhook URL이 설정되지 않았습니다. Discord 로깅이 비활성화됩니다.")
-elif not DISCORD_LOGGING:
-    logger.info("Discord 로깅이 비활성화되어 있습니다.")
 
 # 로깅 설정 완료 로그
 logger.info("로깅 설정 완료")
@@ -171,8 +172,27 @@ def get_current_price():
         sign = "+" if price_change >= 0 else ""
 
         # 로그 출력
-        price_msg = f"현재 {TICKER} 가격: {ticker_price:,.2f}원, ({sign}{change_percentage:.2f}%), {sign}{price_change:.2f}원 {'상승' if price_change >= 0 else '하락'}"
+        base_price_str = f"{BASE_PRICE:,.2f}원" if BASE_PRICE is not None else "미설정"
+        
+        # 현재 가격의 그리드 레벨 계산
+        grid_level = "미설정"
+        if BASE_PRICE is not None and grid_orders:
+            for grid in grid_orders:
+                if grid['buy_price'] >= ticker_price > grid['buy_price'] - PRICE_CHANGE:
+                    grid_level = f"구간 {grid['level']} 레벨"
+                    break
+            else:
+                if ticker_price > BASE_PRICE:
+                    grid_level = "최상단 구간 초과"
+                else:
+                    grid_level = "최하단 구간 미만"
+
+        price_msg = f"현재 {TICKER} 가격: {ticker_price:,.2f}원, 기준가: {base_price_str}, {grid_level}, ({sign}{change_percentage:.2f}%), {sign}{price_change:.2f}원 {'상승' if price_change >= 0 else '하락'}"
         logger.info(price_msg)
+        
+        # Discord로 가격 정보 전송
+        # if DISCORD_LOGGING:
+        #     discord_logger.send(price_msg)
 
         # 다음 비교를 위해 현재 가격을 이전 가격으로 저장
         if not TEST_MODE:
@@ -273,15 +293,15 @@ def create_grid_orders(input_base_price=None):
         logger.error("현재 가격을 가져올 수 없습니다. 프로그램을 종료합니다.")
         return False
 
-    # 입력받은 기준 가격이 있으면 사용, 없으면 현재가 + 5구간으로 설정
+    # 입력받은 기준 가격이 있으면 사용, 없으면 현재가 + 1구간으로 설정
     if input_base_price is not None:
         BASE_PRICE = input_base_price
         logger.info(f"사용자 지정 기준 가격: {BASE_PRICE:,.2f}원")
     else:
-        # 현재가보다 5구간 높게 설정 (PRICE_CHANGE * 5)
-        BASE_PRICE = current_market_price + (PRICE_CHANGE * 5)
+        # 현재가보다 1구간 높게 설정 (PRICE_CHANGE * 1)
+        BASE_PRICE = current_market_price + (PRICE_CHANGE * 1)
         logger.info(f"현재 시장 가격: {current_market_price:,.2f}원")
-        logger.info(f"기준 가격 설정 (현재가 + 5구간): {BASE_PRICE:,.2f}원")
+        logger.info(f"기준 가격 설정 (현재가 + 1구간): {BASE_PRICE:,.2f}원")
 
     grid_orders = []
 
@@ -319,9 +339,17 @@ def create_grid_orders(input_base_price=None):
     return True
 
 
+def is_linux():
+    """Linux 운영체제인지 확인"""
+    return sys.platform.startswith('linux')
+
 def play_sound(sound_type):
     """거래 알림음 재생"""
     try:
+        if sys.platform != 'win32':
+            logger.info(f"사운드 재생: {sound_type} (Windows 환경에서만 지원)")
+            return
+            
         if sound_type == 'buy':
             # 매수 알림음 재생 (비동기 재생)
             winsound.PlaySound('buy.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
@@ -405,6 +433,11 @@ def buy_coin(grid_level):
 
         logger.info(f"매수 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {order_amount:,.0f}원, 수수료: {fee_amount:,.2f}원)")
         
+        # Discord로 매수 정보 전송
+        if DISCORD_LOGGING:
+            buy_msg = f"매수 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {order_amount:,.0f}원, 수수료: {fee_amount:,.2f}원)"
+            discord_logger.send(buy_msg, "INFO")
+
         # 매수 알림음 재생
         play_sound('buy')
 
@@ -491,6 +524,11 @@ def sell_coin(grid_level):
         logger.info(f"매도 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {amount:,.0f}원, 수수료: {fee_amount:,.2f}원)")
         logger.info(f"레벨 {grid_level} 수익: {profit:+,.0f}원 ({profit_percentage:+.2f}%)")
         
+        # Discord로 매도 정보 전송
+        if DISCORD_LOGGING:
+            sell_msg = f"매도 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {amount:,.0f}원, 수수료: {fee_amount:,.2f}원)\n레벨 {grid_level} 수익: {profit:+,.0f}원 ({profit_percentage:+.2f}%)"
+            discord_logger.send(sell_msg, "INFO")
+
         # 매도 알림음 재생
         play_sound('sell')
 
