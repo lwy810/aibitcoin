@@ -816,18 +816,23 @@ def check_price_and_trade():
     # 모든 그리드 주문 확인
     for grid in grid_orders:
         level = grid['level']
+        
+        # current_price가 None이 아닌 경우에만 거래 조건 체크
+        if current_price is not None:
+            # 매수 조건: 현재 가격이 매수가 이하이고 아직 매수되지 않은 경우
+            if current_price <= grid['buy_price'] and not grid['buy_filled']:
+                logger.info(f"레벨 {level} 매수 조건 충족: 현재가({current_price:,.2f}원) <= 매수가({grid['buy_price']:,.2f}원)")
+                buy_coin(level)
+                time.sleep(1) #1초 대기
 
-        # 매수 조건: 현재 가격이 매수가 이하이고 아직 매수되지 않은 경우
-        if current_price <= grid['buy_price'] and not grid['buy_filled']:
-            logger.info(f"레벨 {level} 매수 조건 충족: 현재가({current_price:,.2f}원) <= 매수가({grid['buy_price']:,.2f}원)")
-            buy_coin(level)
-            time.sleep(1) #1초 대기
-
-        # 매도 조건: 현재 가격이 매도가 이상이고 이미 매수되었지만 아직 매도되지 않은 경우
-        elif current_price >= grid['sell_price'] and grid['buy_filled'] and not grid['sell_filled']:
-            logger.info(f"레벨 {level} 매도 조건 충족: 현재가({current_price:,.2f}원) >= 매도가({grid['sell_price']:,.2f}원)")
-            sell_coin(level)
-            time.sleep(1) #1초 대기
+            # 매도 조건: 현재 가격이 매도가 이상이고 이미 매수되었지만 아직 매도되지 않은 경우
+            elif current_price >= grid['sell_price'] and grid['buy_filled'] and not grid['sell_filled']:
+                logger.info(f"레벨 {level} 매도 조건 충족: 현재가({current_price:,.2f}원) >= 매도가({grid['sell_price']:,.2f}원)")
+                sell_coin(level)
+                time.sleep(1) #1초 대기
+        else:
+            logger.warning("현재 가격이 None이어서 거래 조건을 체크할 수 없습니다.")
+            break
             
     logger.info("/check_price_and_trade\n")
 
