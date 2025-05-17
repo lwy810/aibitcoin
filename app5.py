@@ -5,6 +5,8 @@ import numpy as np
 from datetime import datetime
 from dotenv import load_dotenv
 import pyupbit
+import winsound  # Windows 사운드 모듈 추가
+import requests  # Discord Webhook을 위한 requests 모듈 추가
 
 # .env 파일에서 환경변수 로드
 load_dotenv()
@@ -12,22 +14,24 @@ load_dotenv()
 # API 키 설정
 ACCESS_KEY = os.environ.get("UPBIT_ACCESS_KEY")
 SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")
+DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # Discord Webhook URL
+DISCORD_LOGGING = False  # Discord 로깅 활성화 여부
 
 # 거래 설정
-TICKER = "KRW-USDT"  # 비트코인 티커
-BASE_PRICE = None  # 초기 기준 가격 (시장 가격으로 설정됨)
-PRICE_CHANGE = 2  # 가격 변동 기준 (원)
-ORDER_AMOUNT = 10000  # 차수별 주문 금액 (원)
-MAX_GRID_COUNT = 10  # 최대 분할 매수/매도 차수
-CHECK_INTERVAL = 2  # 가격 확인 간격 (초)
+TICKER = "KRW-XRP"  # 테더 티커
+BASE_PRICE = None  # 초기 기준 가격 (현재가 + 5구간)
+PRICE_CHANGE = 2 # 가격 변동 기준 (1원)
+ORDER_AMOUNT = 5000  # 차수별 주문 금액 (1만원)
+MAX_GRID_COUNT = 10  # 최대 분할 매수/매도 차수 (10구간)
+CHECK_INTERVAL = 10  # 가격 확인 간격 (초)
 CANCEL_TIMEOUT = 3600  # 미체결 주문 취소 시간 (초, 1시간)
-TEST_MODE = True  # 테스트 모드 활성화 여부
+TEST_MODE = False  # 테스트 모드 비활성화 (실거래 모드)
 FEE_RATE = 0.0005  # 거래 수수료 (0.05%)
 
 # 전역 변수
 current_price = 0  # 현재 가격
 previous_price = None  # 이전 가격
-price_oscillation_step = 0  # 가격 변동 단계 (0: 초기값, 1: +10원 상태, 2: -10원 상태)
+price_oscillation_step = 0  # 가격 변동 단계 (0: 초기값, 1: +2원 상태, 2: -2원 상태)
 grid_orders = []  # 그리드 주문 저장 리스트
 trade_history = []  # 거래 내역 저장 리스트
 active_orders = {}  # 활성 주문 관리: {uuid: {'grid_level': n, 'type': 'buy'/'sell', 'timestamp': datetime}}
@@ -45,31 +49,68 @@ virtual_balance = {
 # 로깅 설정
 log_file = f"{TICKER.replace('KRW-', '').lower()}_grid_trade.log"
 
+class DiscordHandler(logging.Handler):
+    """Discord로 로그를 전송하는 핸들러"""
+    def __init__(self, webhook_url):
+        super().__init__()
+        self.webhook_url = webhook_url
+
+    def emit(self, record):
+        try:
+            # 로그 레벨에 따른 색상 설정
+            color = {
+                'INFO': 0x00ff00,    # 초록색
+                'WARNING': 0xffff00,  # 노란색
+                'ERROR': 0xff0000,    # 빨간색
+                'CRITICAL': 0xff0000  # 빨간색
+            }.get(record.levelname, 0x808080)  # 기본 회색
+
+            # Discord 메시지 포맷
+            payload = {
+                "embeds": [{
+                    "title": f"[{record.levelname}]",
+                    "description": record.getMessage(),
+                    "color": color,
+                    "timestamp": datetime.now().isoformat()
+                }]
+            }
+
+            # Discord로 전송
+            if self.webhook_url:
+                requests.post(self.webhook_url, json=payload)
+        except Exception as e:
+            print(f"Discord 로그 전송 중 오류 발생: {str(e)}")
+
 # 기본 로깅 설정 (콘솔 출력용)
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
     handlers=[
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger()
 
-# 테스트 모드일 경우 기존 로그 파일 삭제
-if TEST_MODE and os.path.exists(log_file):
-    try:
-        os.remove(log_file)
-        logger.info(f"기존 로그 파일 삭제됨: {log_file}")
-    except Exception as e:
-        logger.error(f"로그 파일 삭제 중 오류 발생: {str(e)}")
-
-# 파일 핸들러 추가
-file_handler = logging.FileHandler(log_file, encoding='utf-8')
-file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+# 파일 핸들러 추가 (append 모드로 설정)
+file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', 
+                                          datefmt='%Y-%m-%d %H:%M:%S'))
 logger.addHandler(file_handler)
 
+# Discord 핸들러 추가
+if DISCORD_WEBHOOK_URL and DISCORD_LOGGING:
+    discord_handler = DiscordHandler(DISCORD_WEBHOOK_URL)
+    discord_handler.setFormatter(logging.Formatter('%(message)s'))  # Discord에서는 시간이 자동으로 추가되므로 메시지만 전송
+    logger.addHandler(discord_handler)
+    logger.info("Discord 로깅이 활성화되었습니다.")
+elif not DISCORD_WEBHOOK_URL:
+    logger.warning("Discord Webhook URL이 설정되지 않았습니다. Discord 로깅이 비활성화됩니다.")
+elif not DISCORD_LOGGING:
+    logger.info("Discord 로깅이 비활성화되어 있습니다.")
+
 # 로깅 설정 완료 로그
-logger.info(f"로깅 설정 완료: {log_file}")
+logger.info("로깅 설정 완료")
 
 def get_current_price():
     """현재 가격 조회"""
@@ -81,10 +122,10 @@ def get_current_price():
             # 테스트 모드에서는 가상 가격 사용
             if 'current_price' not in globals() or current_price == 0:
                 # 첫 호출 시 기본 시작 가격 설정 (사용자 입력 없이)
-                current_price = pyupbit.get_current_price(TICKER)  # 초기 기본값은 티커코인의 현재가로 설정
+                current_price = 1400; # 첫번 현재가를 1400으로 고정한다.
                 previous_price = current_price
 
-                # 진동 단계 초기화 (0: 초기값, 1: +10원 상태, 2: -10원 상태)
+                # 진동 단계 초기화 (0: 초기값, 1: +2원 상태, 2: -2원 상태)
                 if 'price_oscillation_step' not in globals():
                     price_oscillation_step = 0
 
@@ -132,7 +173,6 @@ def get_current_price():
         # 로그 출력
         price_msg = f"현재 {TICKER} 가격: {ticker_price:,.2f}원, ({sign}{change_percentage:.2f}%), {sign}{price_change:.2f}원 {'상승' if price_change >= 0 else '하락'}"
         logger.info(price_msg)
-        print(price_msg)
 
         # 다음 비교를 위해 현재 가격을 이전 가격으로 저장
         if not TEST_MODE:
@@ -160,52 +200,61 @@ def get_balance():
         if TEST_MODE:
             # 테스트 모드일 경우 가상 잔고 사용
             krw_balance = virtual_balance["krw"]
-            btc_balance = virtual_balance["coin"]
-            btc_avg_price = virtual_balance["coin_avg_price"] if btc_balance > 0 else 0
+            coin_balance = virtual_balance["coin"]
+            coin_avg_price = virtual_balance["coin_avg_price"] if coin_balance > 0 else 0
 
-            logger.info(f"[테스트 모드] 보유 원화: {krw_balance:,.0f}원")
-            logger.info(f"[테스트 모드] 보유 {TICKER}: {btc_balance:.8f} {TICKER}")
-
-            if btc_balance > 0:
-                logger.info(f"[테스트 모드] {TICKER} 평균 매수가: {btc_avg_price:,.2f}원")
-                logger.info(f"[테스트 모드] 평가 금액: {btc_balance * current_price:,.0f}원")
-
-            # 총자산 계산
-            total_assets = krw_balance + (btc_balance * current_price)
-            logger.info(f"[테스트 모드] 총 자산: {total_assets:,.0f}원")
-
-            logger.info("/get_balance\n")
-            return {
-                "krw": krw_balance,
-                "coin": btc_balance,
-                "coin_avg_price": btc_avg_price,
-                "total_assets": total_assets
-            }
-        else:
-            # 실제 API 사용 (기존 코드)
-            # 원화 잔고 조회
-            krw_balance = upbit.get_balance("KRW")
             logger.info(f"보유 원화: {krw_balance:,.0f}원")
+            logger.info(f"보유 {TICKER}: {coin_balance:.8f} {TICKER}")
 
-            # BTC 잔고 조회
-            btc_balance = upbit.get_balance(TICKER)
-            btc_avg_price = upbit.get_avg_buy_price(TICKER)
-            logger.info(f"보유 {TICKER}: {btc_balance:.8f} {TICKER}")
-
-            if btc_balance > 0:
-                logger.info(f"{TICKER} 평균 매수가: {btc_avg_price:,.2f}원")
-                logger.info(f"평가 금액: {btc_balance * current_price:,.0f}원")
+            if coin_balance > 0:
+                current_value = coin_balance * current_price
+                total_investment = coin_balance * coin_avg_price
+                profit = current_value - total_investment
+                profit_percentage = (profit / total_investment) * 100 if total_investment > 0 else 0
+                
+                logger.info(f"{TICKER} 평균 매수가: {coin_avg_price:,.2f}원")
+                logger.info(f"평가 금액: {current_value:,.0f}원")
+                logger.info(f"수익금: {profit:+,.0f}원 ({profit_percentage:+.2f}%)")
 
             # 총자산 계산
-            total_assets = krw_balance + (btc_balance * current_price)
+            total_assets = krw_balance + (coin_balance * current_price)
             logger.info(f"총 자산: {total_assets:,.0f}원")
 
             logger.info("/get_balance\n")
-
             return {
                 "krw": krw_balance,
-                "coin": btc_balance,
-                "coin_avg_price": btc_avg_price,
+                "coin": coin_balance,
+                "coin_avg_price": coin_avg_price,
+                "total_assets": total_assets
+            }
+        else:
+            # 실제 API 사용
+            krw_balance = upbit.get_balance("KRW")
+            coin_balance = upbit.get_balance(TICKER)
+            coin_avg_price = upbit.get_avg_buy_price(TICKER)
+
+            logger.info(f"보유 원화: {krw_balance:,.0f}원")
+            logger.info(f"보유 {TICKER}: {coin_balance:.8f} {TICKER}")
+
+            if coin_balance > 0:
+                current_value = coin_balance * current_price
+                total_investment = coin_balance * coin_avg_price
+                profit = current_value - total_investment
+                profit_percentage = (profit / total_investment) * 100 if total_investment > 0 else 0
+                
+                logger.info(f"{TICKER} 평균 매수가: {coin_avg_price:,.2f}원")
+                logger.info(f"평가 금액: {current_value:,.0f}원")
+                logger.info(f"수익금: {profit:+,.0f}원 ({profit_percentage:+.2f}%)")
+
+            # 총자산 계산
+            total_assets = krw_balance + (coin_balance * current_price)
+            logger.info(f"총 자산: {total_assets:,.0f}원")
+
+            logger.info("/get_balance\n")
+            return {
+                "krw": krw_balance,
+                "coin": coin_balance,
+                "coin_avg_price": coin_avg_price,
                 "total_assets": total_assets
             }
     except Exception as e:
@@ -218,17 +267,21 @@ def create_grid_orders(input_base_price=None):
     logger.info("create_grid_orders")
     global grid_orders, BASE_PRICE
 
-    # 입력받은 기준 가격이 있으면 사용
+    # 현재 가격 조회
+    current_market_price = get_current_price()
+    if current_market_price is None:
+        logger.error("현재 가격을 가져올 수 없습니다. 프로그램을 종료합니다.")
+        return False
+
+    # 입력받은 기준 가격이 있으면 사용, 없으면 현재가 + 5구간으로 설정
     if input_base_price is not None:
         BASE_PRICE = input_base_price
         logger.info(f"사용자 지정 기준 가격: {BASE_PRICE:,.2f}원")
-    # 기준 가격이 없으면 현재 가격으로 설정
-    elif BASE_PRICE is None:
-        BASE_PRICE = get_current_price()
-        if BASE_PRICE is None:
-            logger.error("기준 가격을 설정할 수 없습니다. 프로그램을 종료합니다.")
-            return False
-        logger.info(f"현재 시장 가격으로 기준 가격 설정: {BASE_PRICE:,.2f}원")
+    else:
+        # 현재가보다 5구간 높게 설정 (PRICE_CHANGE * 5)
+        BASE_PRICE = current_market_price + (PRICE_CHANGE * 5)
+        logger.info(f"현재 시장 가격: {current_market_price:,.2f}원")
+        logger.info(f"기준 가격 설정 (현재가 + 5구간): {BASE_PRICE:,.2f}원")
 
     grid_orders = []
 
@@ -256,6 +309,8 @@ def create_grid_orders(input_base_price=None):
 
     # 로그 출력
     logger.info(f"총 {len(grid_orders)}개의 그리드 주문 생성됨")
+    logger.info(f"매수/매도 구간: {PRICE_CHANGE}원")
+    logger.info(f"주문 금액: {ORDER_AMOUNT:,}원")
     for grid in grid_orders:
         logger.info(
             f"{grid['level']}차: 매수가 {grid['buy_price']:,.2f}원, 매도가 {grid['sell_price']:,.2f}원, 수량 {grid['volume']:.8f}")
@@ -264,9 +319,23 @@ def create_grid_orders(input_base_price=None):
     return True
 
 
-def buy_btc(grid_level):
-    """지정된 그리드 레벨에서 BTC 매수"""
-    logger.info(f"buy_btc (Level {grid_level})")
+def play_sound(sound_type):
+    """거래 알림음 재생"""
+    try:
+        if sound_type == 'buy':
+            # 매수 알림음 재생 (비동기 재생)
+            winsound.PlaySound('buy.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+        elif sound_type == 'sell':
+            # 매도 알림음 재생 (비동기 재생)
+            winsound.PlaySound('sell.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+    except Exception as e:
+        logger.error(f"알림음 재생 중 오류 발생: {str(e)}")
+        logger.info("알림음 파일(buy.wav, sell.wav)이 현재 디렉토리에 있는지 확인하세요.")
+
+
+def buy_coin(grid_level):
+    """지정된 그리드 레벨에서 코인 시장가 매수"""
+    logger.info(f"buy_coin (Level {grid_level})")
     global virtual_balance
 
     # 해당 그리드 정보 가져오기
@@ -275,13 +344,7 @@ def buy_btc(grid_level):
     # 이미 매수한 경우 건너뛰기
     if grid['buy_filled']:
         logger.info(f"레벨 {grid_level}은 이미 매수되었습니다.")
-        logger.info("/buy_btc\n")
-        return False
-
-    # 이미 매수 주문이 있는 경우
-    if grid['buy_order_id']:
-        logger.info(f"레벨 {grid_level}은 이미 매수 주문이 진행 중입니다: {grid['buy_order_id']}")
-        logger.info("/buy_btc\n")
+        logger.info("/buy_coin\n")
         return False
 
     try:
@@ -296,50 +359,59 @@ def buy_btc(grid_level):
             return False
 
         # 매수 수량 계산 (수수료 고려)
-        price = grid['buy_price']
+        price = current_price
         order_amount = grid['order_amount']
         volume_without_fee = order_amount / price
         fee_amount = order_amount * FEE_RATE
+        volume = volume_without_fee * (1 - FEE_RATE)
 
-        # UUID 생성 및 주문 정보 저장 (테스트 모드와 실제 모드 모두 동일하게 처리)
         if not TEST_MODE:
             try:
-                # 실제 주문 실행
-                order = upbit.buy_limit_order(TICKER, price, volume_without_fee)
-                if order and 'uuid' in order:
-                    uuid = order['uuid']
-                else:
-                    logger.error(f"매수 주문 실패: {order}")
+                # 실제 시장가 매수 주문 실행
+                order = upbit.buy_market_order(TICKER, order_amount)
+                if not order:
+                    logger.error("매수 주문 실패")
                     return False
             except Exception as e:
                 logger.error(f"매수 주문 API 호출 중 오류: {str(e)}")
                 return False
-        else:
-            # 테스트용: 주문 UUID 생성
-            uuid = f"buy-{grid_level}-{int(time.time())}"
 
-        # 그리드 정보 업데이트 (테스트 모드와 실제 모드 모두 동일하게 처리)
-        grid['buy_order_id'] = uuid
-        grid['buy_order_time'] = datetime.now()
-
-        # 활성 주문 목록에 추가 (테스트 모드와 실제 모드 모두 동일하게 처리)
-        active_orders[uuid] = {
-            'grid_level': grid_level,
-            'type': 'buy',
-            'price': price,
-            'volume': volume_without_fee,
-            'timestamp': datetime.now()
-        }
-
-        logger.info(f"매수 주문 완료: 주문번호 {uuid}")
-
-        # 테스트 모드에서는 주문 금액만 가상 잔고에서 차감 (체결은 check_orders에서 처리)
+        # 테스트 모드에서 가상 잔고 업데이트
         if TEST_MODE:
-            # 주문 금액만큼 가상 잔고에서 예약 (실제 차감은 체결 시 처리)
             virtual_balance["krw"] -= order_amount
-            logger.info(f"테스트 모드: 주문 금액 {order_amount:,}원 예약 (잔고: {virtual_balance['krw']:,}원)")
+            virtual_balance["coin"] += volume
+            
+            # 코인 평균 매수가 업데이트
+            if virtual_balance["coin"] > 0:
+                current_value = virtual_balance["coin_avg_price"] * (virtual_balance["coin"] - volume)
+                new_value = price * volume
+                virtual_balance["coin_avg_price"] = (current_value + new_value) / virtual_balance["coin"]
 
-        logger.info("/buy_btc\n")
+        # 거래 내역 저장
+        trade = {
+            'type': 'buy',
+            'grid_level': grid_level,
+            'price': price,
+            'amount': order_amount,
+            'volume': volume,
+            'fee': fee_amount,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        trade_history.append(trade)
+
+        # 그리드 상태 업데이트
+        grid['buy_filled'] = True
+        grid['status'] = 'bought'
+
+        logger.info(f"매수 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {order_amount:,.0f}원, 수수료: {fee_amount:,.2f}원)")
+        
+        # 매수 알림음 재생
+        play_sound('buy')
+
+        # 잔고 출력
+        get_balance()
+
+        logger.info("/buy_coin\n")
         return True
 
     except Exception as e:
@@ -347,9 +419,9 @@ def buy_btc(grid_level):
         return False
 
 
-def sell_btc(grid_level):
-    """지정된 그리드 레벨에서 BTC 매도"""
-    logger.info(f"sell_btc (Level {grid_level})")
+def sell_coin(grid_level):
+    """지정된 그리드 레벨에서 코인 시장가 매도"""
+    logger.info(f"sell_coin (Level {grid_level})")
     global virtual_balance
 
     # 해당 그리드 정보 가져오기
@@ -360,72 +432,78 @@ def sell_btc(grid_level):
         logger.info(f"레벨 {grid_level}은 매도 불가능합니다.")
         return False
 
-    # 이미 매도 주문이 있는 경우
-    if grid['sell_order_id']:
-        logger.info(f"레벨 {grid_level}은 이미 매도 주문이 진행 중입니다: {grid['sell_order_id']}")
-        return False
-
     try:
         # 보유량 확인
         if TEST_MODE:
-            btc_balance = virtual_balance["coin"]
+            coin_balance = virtual_balance["coin"]
         else:
-            btc_balance = upbit.get_balance(TICKER)
+            coin_balance = upbit.get_balance(TICKER)
 
-        # 매도 수량 - 업비트는 매도 시 원화에서 수수료를 차감하므로 수량에 수수료 적용하지 않음
+        # 매도 수량
         volume = grid['volume']
-        if btc_balance < volume:
-            logger.warning(f"{TICKER} 보유량 부족: 매도 불가 (필요: {volume:.8f}, 보유: {btc_balance:.8f})")
+        if coin_balance < volume:
+            logger.warning(f"{TICKER} 보유량 부족: 매도 불가 (필요: {volume:.8f}, 보유: {coin_balance:.8f})")
             return False
 
         # 매도 가격
-        price = grid['sell_price']
+        price = current_price
+        sell_amount = volume * price
+        fee_amount = sell_amount * FEE_RATE
+        amount = sell_amount - fee_amount
 
         if not TEST_MODE:
             try:
-                # 실제 주문 실행
-                order = upbit.sell_limit_order(TICKER, price, volume)
-                if order and 'uuid' in order:
-                    uuid = order['uuid']
-                    grid['sell_order_id'] = uuid
-                    grid['sell_order_time'] = datetime.now()
-
-                    # 활성 주문 목록에 추가
-                    active_orders[uuid] = {
-                        'grid_level': grid_level,
-                        'type': 'sell',
-                        'price': price,
-                        'volume': volume,
-                        'timestamp': datetime.now()
-                    }
-
-                    logger.info(f"매도 주문 완료: 주문번호 {uuid}")
-                    logger.info("/sell_btc\n")
-                    return True
-                else:
-                    logger.error(f"매도 주문 실패: {order}")
+                # 실제 시장가 매도 주문 실행
+                order = upbit.sell_market_order(TICKER, volume)
+                if not order:
+                    logger.error("매도 주문 실패")
                     return False
             except Exception as e:
                 logger.error(f"매도 주문 API 호출 중 오류: {str(e)}")
                 return False
-        else:
-            # 테스트용: 주문 생성 시뮬레이션
-            uuid = f"sell-{grid_level}-{int(time.time())}"
-            grid['sell_order_id'] = uuid
-            grid['sell_order_time'] = datetime.now()
 
-            # 활성 주문 목록에 추가
-            active_orders[uuid] = {
-                'grid_level': grid_level,
-                'type': 'sell',
-                'price': price,
-                'volume': volume,
-                'timestamp': datetime.now()
-            }
+        # 테스트 모드에서 가상 잔고 업데이트
+        if TEST_MODE:
+            virtual_balance["krw"] += amount
+            virtual_balance["coin"] -= volume
 
-            logger.info(f"매도 주문 완료: 주문번호 {uuid}")
-            logger.info("/sell_btc\n")
-            return True
+            # 코인이 매우 작은 값이거나 0이 되면 완전히 초기화
+            if virtual_balance["coin"] < 0.00000001:
+                virtual_balance["coin"] = 0
+                virtual_balance["coin_avg_price"] = 0
+
+        # 수익 계산 (테스트/실거래 모두)
+        profit = amount - grid['order_amount']
+        profit_percentage = (profit / grid['order_amount']) * 100
+
+        # 거래 내역 저장
+        trade = {
+            'type': 'sell',
+            'grid_level': grid_level,
+            'price': price,
+            'amount': amount,
+            'volume': volume,
+            'fee': fee_amount,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        trade_history.append(trade)
+
+        logger.info(f"매도 완료: {volume:.8f} {TICKER} (가격: {price:,.2f}원, 금액: {amount:,.0f}원, 수수료: {fee_amount:,.2f}원)")
+        logger.info(f"레벨 {grid_level} 수익: {profit:+,.0f}원 ({profit_percentage:+.2f}%)")
+        
+        # 매도 알림음 재생
+        play_sound('sell')
+
+        # 그리드 초기화
+        grid['buy_filled'] = False
+        grid['sell_filled'] = False
+        grid['status'] = 'waiting'
+
+        # 잔고 출력
+        get_balance()
+
+        logger.info("/sell_coin\n")
+        return True
 
     except Exception as e:
         logger.error(f"매도 중 오류 발생: {str(e)}")
@@ -579,7 +657,7 @@ def check_orders():
 
                         # 매수 주문이 체결되면 즉시 매도 주문 실행
                         logger.info(f"레벨 {grid_level}의 매수 주문이 체결되었습니다. 매도 주문 실행")
-                        sell_btc(grid_level)
+                        sell_coin(grid_level)
 
                     else:  # sell
                         # 매도 주문 체결 처리
@@ -648,7 +726,7 @@ def check_orders():
 
                         # 매수 주문이 체결되면 즉시 매도 주문 실행
                         logger.info(f"레벨 {grid_level}의 매수 주문이 체결되었습니다. 매도 주문 실행")
-                        sell_btc(grid_level)
+                        sell_coin(grid_level)
 
                     else:  # sell
                         grid['sell_filled'] = True
@@ -701,21 +779,18 @@ def check_price_and_trade():
     for grid in grid_orders:
         level = grid['level']
 
-        # 매수 조건: 현재 가격이 매수가 이하이고 아직 매수되지 않은 경우 (주문 없는 경우)
-        if current_price <= grid['buy_price'] and not grid['buy_filled'] and not grid['buy_order_id']:
+        # 매수 조건: 현재 가격이 매수가 이하이고 아직 매수되지 않은 경우
+        if current_price <= grid['buy_price'] and not grid['buy_filled']:
             logger.info(f"레벨 {level} 매수 조건 충족: 현재가({current_price:,.2f}원) <= 매수가({grid['buy_price']:,.2f}원)")
-            buy_success = buy_btc(level)
+            buy_coin(level)
+            time.sleep(1) #1초 대기
 
-            # 매수 성공 로그만 남기고, 실제 모드와 테스트 모드 모두 check_orders에서 체결 처리
-            if buy_success:
-                logger.info(f"레벨 {level} 매수 주문 완료. 체결 후 자동으로 매도 주문이 실행됩니다.")
-
-        # 매도 조건: 현재 가격이 매도가 이상이고 이미 매수되었지만 아직 매도되지 않은 경우 (주문 없는 경우)
-        elif current_price >= grid['sell_price'] and grid['buy_filled'] and not grid['sell_filled'] and not grid[
-            'sell_order_id']:
+        # 매도 조건: 현재 가격이 매도가 이상이고 이미 매수되었지만 아직 매도되지 않은 경우
+        elif current_price >= grid['sell_price'] and grid['buy_filled'] and not grid['sell_filled']:
             logger.info(f"레벨 {level} 매도 조건 충족: 현재가({current_price:,.2f}원) >= 매도가({grid['sell_price']:,.2f}원)")
-            sell_btc(level)
-
+            sell_coin(level)
+            time.sleep(1) #1초 대기
+            
     logger.info("/check_price_and_trade\n")
 
 
@@ -796,8 +871,8 @@ def display_final_trading_results():
     logger.info(f"총 수익: {profit:+,.0f}원 ({profit_percentage:+.2f}%)")
 
     # 거래 통계
-    buy_count = sum(1 for trade in trade_history if trade['type'] == 'buy')
-    sell_count = sum(1 for trade in trade_history if trade['type'] == 'sell')
+    buy_count = sum(1 for trade in trade_history if trade['type'] == 'buy' and 'cancel' not in trade['type'])
+    sell_count = sum(1 for trade in trade_history if trade['type'] == 'sell' and 'cancel' not in trade['type'])
     cancel_count = sum(1 for trade in trade_history if 'cancel' in trade['type'])
 
     logger.info(f"\n총 거래 횟수: {len(trade_history)}회")
@@ -812,15 +887,14 @@ def display_final_trading_results():
         logger.info(f"총 매수 금액: {total_buy_amount:,.0f}원")
     if total_sell_amount > 0:
         logger.info(f"총 매도 금액: {total_sell_amount:,.0f}원")
-        logger.info(f"순 거래 수익: {total_sell_amount - total_buy_amount:+,.0f}원")
-
+    
     logger.info(f"총 수수료: {total_fee:,.0f}원")
     logger.info("/display_final_trading_results\n")
 
 
 def run_trading():
     logger.info("run_trading")
-    global current_price, virtual_balance, initial_assets
+    global current_price, virtual_balance, initial_assets, DISCORD_LOGGING
 
     logger.info(f"===== {TICKER} 자동 매매 시작 =====")
 
@@ -830,56 +904,48 @@ def run_trading():
     logger.info(f"가격 변동 기준: {PRICE_CHANGE}원")
     logger.info(f"최대 분할 차수: {MAX_GRID_COUNT}")
     logger.info(f"가격 확인 간격: {CHECK_INTERVAL}초")
-    logger.info(f"미체결 주문 취소 시간: {CANCEL_TIMEOUT}초")
     logger.info(f"거래 수수료율: {FEE_RATE * 100:.3f}%")
-
-    # 테스트 모드인 경우 초기 가상 잔고 설정
-    if TEST_MODE:
-        logger.info("테스트 모드 활성화됨")
-        initial_assets = 0
-
-        # 사용자 입력으로 초기 가상 잔고 설정
-        initial_assets = virtual_balance["krw"]  # 초기 원화 잔고 (기본값: 1,000,000원)
-        logger.info(f"초기 원화 잔고: {virtual_balance['krw']:,.0f}원")
-        logger.info(f"초기 {TICKER} 보유량: {virtual_balance['coin']:.8f} {TICKER}")
-        logger.info(f"초기 총 자산: {initial_assets:,.0f}원")
-
+    logger.info(f"Discord 로깅: {'활성화' if DISCORD_LOGGING else '비활성화'}")
 
     try:
-        ticker_price = get_current_price()  #
+        # 테스트 모드인 경우 초기 가상 잔고 설정
+        if TEST_MODE:
+            logger.info("테스트 모드 활성화됨")
+            initial_assets = virtual_balance["krw"]
+            logger.info(f"초기 원화 잔고: {virtual_balance['krw']:,.0f}원")
+            logger.info(f"초기 {TICKER} 보유량: {virtual_balance['coin']:.8f} {TICKER}")
+            logger.info(f"초기 총 자산: {initial_assets:,.0f}원")
+            logger.info(f"=== 테스트 모드에서는 편의상 기준가를 1400으로 한다.===")
+            input_base_price = 1400
+        else:
+            logger.info("테스트 모드 비활성화됨")
+            # 현재가 조회
+            ticker_price = get_current_price()
+            if ticker_price is None:
+                logger.error("현재 가격을 가져올 수 없습니다. 프로그램을 종료합니다.")
+                return
+            # 현재가 + 1구간을 기준가로 설정
+            input_base_price = ticker_price + (PRICE_CHANGE * 1)
+            logger.info(f"현재 시장 가격: {ticker_price:,.2f}원")
+            logger.info(f"기준 가격 설정 (현재가 + 1구간): {input_base_price:,.2f}원")
 
-        input_base_price = ticker_price  # 기준 가격을 현재 시장가 사용로 설정
-        # 그리드 주문 생성 (사용자 입력 기준가)
+        # 그리드 주문 생성
         if not create_grid_orders(input_base_price):
             return
-    except Exception as e:
-        logger.error(f"\ncreate_grid_orders 오류 발생: {str(e)}")
-        return
 
-    # 현재 가격 갱신
-    current_price = get_current_price()
-    if current_price is None:
-        logger.error("현재 가격을 가져올 수 없습니다. 프로그램을 종료합니다.")
-        return
+        # 현재 가격 갱신
+        current_price = get_current_price()
+        if current_price is None:
+            logger.error("현재 가격을 가져올 수 없습니다. 프로그램을 종료합니다.")
+            return
 
-    try:
         # 무한 루프 시작
         logger.info(f"===== 무한 루프 시작(run_trading) =====")
         cycle_count = 0
         while True:
-            cycle_count += 1
+            cycle_count = (cycle_count % 10000) + 1  # 1부터 10000까지 순환
             logger.info(f"===== 사이클 #{cycle_count} =====")
-
-            # 활성 주문 목록 표시
-            logger.info(f"현재 활성 주문 수: {len(active_orders)}")
-
-            # 주문 상태 확인
-            check_orders()
-
-            # 가격 확인 및 거래
             check_price_and_trade()
-
-            # 대기
             logger.info(f"{CHECK_INTERVAL}초 대기...")
             time.sleep(CHECK_INTERVAL)
 
@@ -890,26 +956,17 @@ def run_trading():
         import traceback
         logger.error(traceback.format_exc())
     finally:
-        # 최종 결과 출력 및 저장
+        # 최종 결과 출력
         logger.info("===== 거래 종료 =====")
         get_balance()
-
-        # 테스트 모드인 경우 최종 거래 성과 분석
         if TEST_MODE:
             display_final_trading_results()
 
-        # 미체결 주문 취소 여부 확인
-        if len(active_orders) > 0:
-            logger.info(f"미체결 주문이 {len(active_orders)}개 있습니다.")
-            logger.info("모든 미체결 주문을 취소합니다...")
-            cancel_all_orders()
-
         # 거래 내역 요약
-        buy_count = sum(1 for trade in trade_history if trade['type'] == 'buy')
-        sell_count = sum(1 for trade in trade_history if trade['type'] == 'sell')
-        cancel_count = sum(1 for trade in trade_history if 'cancel' in trade['type'])
+        buy_count = sum(1 for trade in trade_history if trade['type'] == 'buy' and 'cancel' not in trade['type'])
+        sell_count = sum(1 for trade in trade_history if trade['type'] == 'sell' and 'cancel' not in trade['type'])
         logger.info(f"\n총 거래 횟수: {len(trade_history)}회")
-        logger.info(f"매수: {buy_count}회, 매도: {sell_count}회, 취소: {cancel_count}회")
+        logger.info(f"매수: {buy_count}회, 매도: {sell_count}회")
 
     logger.info("/run_trading\n")
 
