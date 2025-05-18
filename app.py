@@ -381,9 +381,12 @@ def buy_coin(grid_level):
             krw_balance = virtual_balance["krw"]
         else:
             krw_balance = upbit.get_balance("KRW")
+            if krw_balance is None:
+                logger.error("원화 잔고 조회 실패")
+                return False
 
-        if krw_balance < grid['order_amount']:
-            logger.warning(f"잔액 부족: 매수 불가 (필요: {grid['order_amount']:,}원, 보유: {krw_balance:,}원)")
+        if not krw_balance or krw_balance < grid['order_amount']:
+            logger.warning(f"잔액 부족 또는 조회 실패: 매수 불가 (필요: {grid['order_amount']:,}원, 보유: {krw_balance if krw_balance is not None else '조회실패'}원)")
             return False
 
         # 매수 수량 계산 (수수료 고려)
