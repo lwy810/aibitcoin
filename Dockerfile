@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 소스 코드 복사
 COPY . .
 
-# 환경 변수 설정 (실행 시 오버라이드 가능)
+# 환경 변수 설정
 ENV UPBIT_ACCESS_KEY=""
 ENV UPBIT_SECRET_KEY=""
 ENV DISCORD_WEBHOOK_URL=""
