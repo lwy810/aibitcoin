@@ -42,15 +42,16 @@ grid_orders = []  # 그리드 주문 목록
 trade_history = []  # 거래 내역
 active_orders = {}  # 활성 주문 관리
 
-# Upbit 객체 생성
-upbit = pyupbit.Upbit(ACCESS_KEY, SECRET_KEY)
-
-# 가상 잔고 정보를 저장할 전역 변수
+# 테스트 모드 - 가상 잔고 정보를 저장할 전역 변수
 virtual_balance = {
     "krw": 1000000,  # 초기 원화 잔고 (100만원)
     "coin": 0,  # 보유 코인 수량
     "coin_avg_price": 0  # 평균 매수가
 }
+
+# Upbit 객체 생성
+upbit = pyupbit.Upbit(ACCESS_KEY, SECRET_KEY)
+
 
 class DiscordLogger:
     """디스코드로 로그를 전송하는 전용 로거"""
