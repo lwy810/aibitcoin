@@ -24,13 +24,14 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # Discord Webhook U
 TEST_MODE = True  # 테스트 모드 (실거래 모드)
 TICKER = "KRW-XRP"  # 코인 티커
 BASE_PRICE = None  # 초기 기준 가격 (기준가를 기준으로 가격을 낮추면서 구간(gid)를 만든다)
-PRICE_CHANGE = 4 # 가격 변동 기준 (2원)
+PRICE_CHANGE = 2 # REAL 4, TEST 2 - 가격 변동 기준 (2원)
+OFFSET_GRID = 4  # 기준가 설정 시 현재가로부터의 구간 오프셋 (기본값: 4구간, 5번 매수됨.)
 ORDER_AMOUNT = 5000  # 차수별 주문 금액 (1만원)
 MAX_GRID_COUNT = 10  # 최대 분할 매수/매도 차수 (10구간)
-CHECK_INTERVAL = 10  # 가격 확인 간격 (초)
+CHECK_INTERVAL = 3  # 가격 확인 간격 (초)
 CANCEL_TIMEOUT = 3600  # 미체결 주문 취소 시간 (초, 1시간)
 FEE_RATE = 0.0005  # 거래 수수료 (0.05%)
-DISCORD_LOGGING = True  # Discord 로깅 활성화 여부
+DISCORD_LOGGING = False  # Discord 로깅 활성화 여부
 
 # 전역 변수
 current_price = 0  # 현재 가격
@@ -293,15 +294,15 @@ def create_grid_orders(input_base_price=None):
         logger.error("현재 가격을 가져올 수 없습니다. 프로그램을 종료합니다.")
         return False
 
-    # 입력받은 기준 가격이 있으면 사용, 없으면 현재가 + 1구간으로 설정
+    # 입력받은 기준 가격이 있으면 사용, 없으면 현재가 + OFFSET_GRID 구간으로 설정
     if input_base_price is not None:
         BASE_PRICE = input_base_price
         logger.info(f"사용자 지정 기준 가격: {BASE_PRICE:,.2f}원")
     else:
-        # 현재가보다 1구간 높게 설정 (PRICE_CHANGE * 1)
-        BASE_PRICE = current_market_price + (PRICE_CHANGE * 1)
+        # 현재가보다 OFFSET_GRID 구간 높게 설정
+        BASE_PRICE = current_market_price + (PRICE_CHANGE * OFFSET_GRID)
         logger.info(f"현재 시장 가격: {current_market_price:,.2f}원")
-        logger.info(f"기준 가격 설정 (현재가 + 1구간): {BASE_PRICE:,.2f}원")
+        logger.info(f"기준 가격 설정 (현재가 + {OFFSET_GRID}구간): {BASE_PRICE:,.2f}원")
 
     grid_orders = []
 
@@ -970,10 +971,10 @@ def run_trading():
             if ticker_price is None:
                 logger.error("현재 가격을 가져올 수 없습니다. 프로그램을 종료합니다.")
                 return
-            # 현재가 + 1구간을 기준가로 설정
-            input_base_price = ticker_price + (PRICE_CHANGE * 1)
+            # 현재가 + OFFSET_GRID 구간을 기준가로 설정
+            input_base_price = ticker_price + (PRICE_CHANGE * OFFSET_GRID)
             logger.info(f"현재 시장 가격: {ticker_price:,.2f}원")
-            logger.info(f"기준 가격 설정 (현재가 + 1구간): {input_base_price:,.2f}원")
+            logger.info(f"기준 가격 설정 (현재가 + {OFFSET_GRID}구간): {input_base_price:,.2f}원")
 
         # 그리드 주문 생성
         if not create_grid_orders(input_base_price):
