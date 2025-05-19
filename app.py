@@ -1,14 +1,15 @@
-import os
-import time
-import logging
-import numpy as np
-from datetime import datetime
-from dotenv import load_dotenv
-import pyupbit
-import requests
-import sys
+# 기본 라이브러리 임포트
+import os  # 운영체제 관련 기능 사용
+import time  # 시간 지연 및 시간 관련 기능
+import logging  # 로깅 기능
+import numpy as np  # 수치 계산
+from datetime import datetime  # 날짜/시간 처리
+from dotenv import load_dotenv  # 환경변수 관리
+import pyupbit  # 업비트 API 연동
+import requests  # HTTP 요청
+import sys  # 시스템 관련 기능
 
-# Windows 환경에서만 winsound 모듈 import
+# Windows 환경에서만 winsound 모듈 import (소리 알림용)
 if sys.platform == 'win32':
     import winsound
 
@@ -16,49 +17,51 @@ if sys.platform == 'win32':
 load_dotenv()
 
 # API 키 설정
-ACCESS_KEY = os.environ.get("UPBIT_ACCESS_KEY")
-SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")
-DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # Discord Webhook URL
+ACCESS_KEY = os.environ.get("UPBIT_ACCESS_KEY")  # 업비트 액세스 키
+SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")  # 업비트 시크릿 키
+DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # 디스코드 웹훅 URL
 
 # 거래 설정
-TEST_MODE = True  # 테스트 모드 (실거래 모드)
-TICKER = "KRW-XRP"  # 코인 티커
-BASE_PRICE = None  # 초기 기준 가격 (기준가를 기준으로 가격을 낮추면서 구간(gid)를 만든다)
-PRICE_CHANGE = 2 # REAL 4, TEST 2 - 가격 변동 기준 (2원)
-OFFSET_GRID = 4  # 기준가 설정 시 현재가로부터의 구간 오프셋 (기본값: 4구간, 5번 매수됨.)
-ORDER_AMOUNT = 5000  # 차수별 주문 금액 (1만원)
-MAX_GRID_COUNT = 10  # 최대 분할 매수/매도 차수 (10구간)
-CHECK_INTERVAL = 3  # 가격 확인 간격 (초)
-CANCEL_TIMEOUT = 3600  # 미체결 주문 취소 시간 (초, 1시간)
+TEST_MODE = True  # 테스트 모드 활성화 (실제 거래 대신 가상 거래)
+TICKER = "KRW-XRP"  # 거래할 코인 (리플)
+BASE_PRICE = None  # 기준 가격 (자동 설정됨)
+PRICE_CHANGE = 2  # 가격 변동 기준 (테스트모드는 2원, 실제 거래는 4원)
+OFFSET_GRID = 4  # 기준가로부터의 구간 오프셋
+ORDER_AMOUNT = 5000  # 주문당 금액 (5천원)
+MAX_GRID_COUNT = 10  # 최대 그리드 수
+CHECK_INTERVAL = 30  # 가격 체크 간격 (30초)
+CANCEL_TIMEOUT = 3600  # 미체결 주문 취소 시간 (1시간)
 FEE_RATE = 0.0005  # 거래 수수료 (0.05%)
-DISCORD_LOGGING = False  # Discord 로깅 활성화 여부
+DISCORD_LOGGING = False  # 디스코드 로깅 비활성화
 
 # 전역 변수
-current_price = 0  # 현재 가격
+current_price = 0  # 현재 코인 가격
 previous_price = None  # 이전 가격
-price_oscillation_step = 0  # 가격 변동 단계 (0: 초기값, 1: +2원 상태, 2: -2원 상태)
-grid_orders = []  # 그리드 주문 저장 리스트
-trade_history = []  # 거래 내역 저장 리스트
-active_orders = {}  # 활성 주문 관리: {uuid: {'grid_level': n, 'type': 'buy'/'sell', 'timestamp': datetime}}
+price_oscillation_step = 0  # 가격 변동 단계 (테스트 모드용)
+grid_orders = []  # 그리드 주문 목록
+trade_history = []  # 거래 내역
+active_orders = {}  # 활성 주문 관리
 
 # Upbit 객체 생성
 upbit = pyupbit.Upbit(ACCESS_KEY, SECRET_KEY)
 
 # 가상 잔고 정보를 저장할 전역 변수
 virtual_balance = {
-    "krw": 1000000,  # 초기 100만원
-    "coin": 0,  # 초기 0 코인
-    "coin_avg_price": 0  # 초기 평균 매수가 0원
+    "krw": 1000000,  # 초기 원화 잔고 (100만원)
+    "coin": 0,  # 보유 코인 수량
+    "coin_avg_price": 0  # 평균 매수가
 }
 
 class DiscordLogger:
-    """Discord로 로그를 전송하는 전용 로거"""
+    """디스코드로 로그를 전송하는 전용 로거"""
     def __init__(self, webhook_url):
         self.webhook_url = webhook_url
         self.enabled = bool(webhook_url)
 
     def send(self, message, level="INFO"):
-        """Discord로 메시지 전송"""
+        """디스코드로 메시지 전송
+        level: INFO(초록색), WARNING(노란색), ERROR(빨간색)
+        """
         if not self.enabled:
             return
 
@@ -715,7 +718,7 @@ def check_orders():
                         virtual_balance["krw"] += amount  # 수수료 제외한 금액 추가
                         virtual_balance["coin"] -= volume  # 전체 수량 차감
 
-                        # BTC가 매우 작은 값이거나 0이 되면 완전히 초기화
+                        # 코인가격이 매우 작은 값거나 0이 되면 완전히 초기화
                         if virtual_balance["coin"] < 0.00000001:
                             virtual_balance["coin"] = 0
                             virtual_balance["coin_avg_price"] = 0
@@ -839,59 +842,6 @@ def check_price_and_trade():
             break
             
     logger.info("/check_price_and_trade\n")
-
-
-def cancel_all_orders():
-    """모든 주문 취소"""
-    logger.info("cancel_all_orders")
-
-    # 활성 주문 목록 복사 (for문에서 삭제 시 에러 방지)
-    active_order_uuids = list(active_orders.keys())
-
-    canceled_count = 0
-    for uuid in active_order_uuids:
-        if cancel_order(uuid):
-            canceled_count += 1
-
-    logger.info(f"총 {canceled_count}개의 주문이 취소되었습니다.")
-    logger.info("/cancel_all_orders\n")
-    return canceled_count
-
-
-def display_virtual_balance():
-    """테스트 모드에서 현재 가상 잔고 상태를 표시하는 함수"""
-    logger.info("display_virtual_balance")
-    logger.info("===== 테스트 모드 가상 잔고 상태 =====")
-    logger.info(f"원화 잔고: {virtual_balance['krw']:,.0f}원")
-    logger.info(f"{TICKER} 보유량: {virtual_balance['coin']:.8f} {TICKER}")
-    if virtual_balance["coin"] > 0:
-        logger.info(f"{TICKER} 평균 매수가: {virtual_balance['coin_avg_price']:,.2f}원")
-        logger.info(f"평가 금액: {virtual_balance['coin'] * current_price:,.0f}원")
-
-    # 수익률 계산
-    if virtual_balance["coin"] > 0 and virtual_balance["coin_avg_price"] > 0:
-        profit_percentage = ((current_price / virtual_balance["coin_avg_price"]) - 1) * 100
-        logger.info(f"현재 수익률: {profit_percentage:+.2f}%")
-
-    # 총자산 계산
-    total_assets = virtual_balance["krw"] + (virtual_balance["coin"] * current_price)
-    logger.info(f"총 자산: {total_assets:,.0f}원")
-
-    # 거래 통계
-    buy_count = sum(1 for trade in trade_history if trade['type'] == 'buy')
-    sell_count = sum(1 for trade in trade_history if trade['type'] == 'sell')
-    logger.info(f"현재까지 매수: {buy_count}회, 매도: {sell_count}회")
-
-    # 매수/매도 금액 및 수수료 합계
-    total_buy_amount = sum(trade['amount'] for trade in trade_history if trade['type'] == 'buy')
-    total_sell_amount = sum(trade['amount'] for trade in trade_history if trade['type'] == 'sell')
-    total_fee = sum(trade.get('fee', 0) for trade in trade_history)
-
-    if total_buy_amount > 0 or total_sell_amount > 0:
-        logger.info(f"총 매수 금액: {total_buy_amount:,.0f}원, 총 매도 금액: {total_sell_amount:,.0f}원")
-        logger.info(f"총 수수료: {total_fee:,.0f}원")
-    
-    logger.info("/display_virtual_balance\n")
 
 
 def display_final_trading_results():
