@@ -408,6 +408,11 @@ def buy_coin(grid_level):
                 if not order:
                     logger.error("매수 주문 실패")
                     return False
+                
+                # 주문 체결 확인
+                if order['state'] != 'done':
+                    logger.error("매수 주문이 체결되지 않았습니다.")
+                    return False
             except Exception as e:
                 logger.error(f"매수 주문 API 호출 중 오류: {str(e)}")
                 return False
