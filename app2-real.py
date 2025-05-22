@@ -232,12 +232,12 @@ def play_sound(sound_type):
             logger.info(f"사운드 재생: {sound_type} (Windows 환경에서만 지원)")
             return
         if sound_type == 'buy':
-            winsound.PlaySound('buy.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+            winsound.PlaySound('res/buy.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
         elif sound_type == 'sell':
-            winsound.PlaySound('sell.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+            winsound.PlaySound('res/sell.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
     except Exception as e:
         logger.error(f"알림음 재생 중 오류 발생: {str(e)}")
-        logger.info("알림음 파일(buy.wav, sell.wav)이 현재 디렉토리에 있는지 확인하세요.")
+        logger.info("알림음 파일(res/buy.wav, res/sell.wav)이 res 폴더에 있는지 확인하세요.")
 
 
 def buy_coin(grid_level):

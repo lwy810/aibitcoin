@@ -357,13 +357,13 @@ def play_sound(sound_type):
             
         if sound_type == 'buy':
             # 매수 알림음 재생 (비동기 재생)
-            winsound.PlaySound('buy.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+            winsound.PlaySound('res/buy.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
         elif sound_type == 'sell':
             # 매도 알림음 재생 (비동기 재생)
-            winsound.PlaySound('sell.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+            winsound.PlaySound('res/sell.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
     except Exception as e:
         logger.error(f"알림음 재생 중 오류 발생: {str(e)}")
-        logger.info("알림음 파일(buy.wav, sell.wav)이 현재 디렉토리에 있는지 확인하세요.")
+        logger.info("알림음 파일(res/buy.wav, res/sell.wav)이 res 폴더에 있는지 확인하세요.")
 
 
 def buy_coin(grid_level):
@@ -513,7 +513,7 @@ def sell_coin(grid_level):
             virtual_balance["krw"] += amount
             virtual_balance["coin"] -= volume
 
-            # 코인이 매우 작은 값이거나 0이 되면 완전히 초기화
+            # 코인가격이 매우 작은 값거나 0이 되면 완전히 초기화
             if virtual_balance["coin"] < 0.00000001:
                 virtual_balance["coin"] = 0
                 virtual_balance["coin_avg_price"] = 0
