@@ -98,19 +98,16 @@ if st.sidebar.button("백테스트 실행"):
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                st.metric("총 수익률", f"{total_return:.2f}%", 
-                         delta=f"{total_return:.2f}%")
+                st.metric("총 수익률", f"{total_return:.2f}%", delta=f"{total_return:.2f}%")
             
             with col2:
-                st.metric("매수후보유 수익률", f"{buy_hold_return:.2f}%",
-                         delta=f"{buy_hold_return:.2f}%")
+                st.metric("매수후보유 수익률", f"{buy_hold_return:.2f}%", delta=f"{buy_hold_return:.2f}%")
             
             with col3:
                 st.metric("총 거래횟수", f"{len(trades)}회")
             
             with col4:
-                st.metric("최종 자산", f"{final_balance:,.0f}원",
-                         delta=f"{final_balance - initial_balance:,.0f}원")
+                st.metric("최종 자산", f"{final_balance:,.0f}원", delta=f"{final_balance - initial_balance:,.0f}원")
             
             # 차트 생성
             balance_df = pd.DataFrame(daily_balance)
