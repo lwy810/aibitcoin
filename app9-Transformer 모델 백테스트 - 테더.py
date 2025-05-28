@@ -1,7 +1,7 @@
-# 비트코인 Transformer 모델 백테스트 (5년간)
+# 테더 코인 Transformer 모델 백테스트 (5년간)
 # 년수익률, MDD, 샤프지수, 승률 등 성과 분석
 
-import yfinance as yf
+import pyupbit
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -38,16 +38,29 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"사용 중인 디바이스: {device}")
 
 # 1. 데이터 로딩 및 전처리
-print("\n=== 데이터 로딩 중 ===")
-df = yf.download('BTC-USD', start='2020-01-01', end='2024-12-31')[['Close']]
-print(f"총 데이터 개수: {len(df)}일")
+print("\n=== 테더 코인 데이터 로딩 중 ===")
 
-if len(df) > 0:
+# 테더 코인 5년간 일봉 데이터 가져오기
+try:
+    df = pyupbit.get_ohlcv('KRW-USDT', interval="day", count=2000)
+    
+    if df is None or df.empty:
+        print("테더 코인 데이터를 가져올 수 없습니다.")
+        exit()
+    
+    # close 컬럼만 사용하고 DataFrame 형태로 변환
+    df = df[['close']].copy()
+    df.columns = ['Close']  # 컬럼명 통일
+    
+    print(f"총 데이터 개수: {len(df)}일")
+    print(f"데이터 기간: {df.index[0]} ~ {df.index[-1]}")
+    
     min_price = float(df['Close'].min())
     max_price = float(df['Close'].max())
-    print(f"데이터 범위: ${min_price:.2f} ~ ${max_price:.2f}")
-else:
-    print("데이터가 없습니다. 프로그램을 종료합니다.")
+    print(f"가격 범위: {min_price:,.0f}원 ~ {max_price:,.0f}원")
+    
+except Exception as e:
+    print(f"데이터 로딩 중 오류: {e}")
     exit()
 
 # 원본 데이터 저장 (백테스트용)
@@ -95,15 +108,21 @@ class TransformerModel(nn.Module):
 # 3. 백테스트를 위한 시계열 분할
 print("\n=== 백테스트 데이터 준비 ===")
 window_size = 60
-prediction_days = 1  # +1일 예측으로 변경
+prediction_days = 5  # +1일 예측으로 변경
 
 # 전체 데이터셋 생성
 X, y = make_dataset(scaled_data, window_size, prediction_days)
 
 # 백테스트를 위한 시간 순서 유지
 total_samples = len(X)
-train_size = int(total_samples * 0.7)  # 70% 학습용
-test_size = total_samples - train_size  # 30% 백테스트용
+test_days = 365  # 1년간 테스트 기간
+
+# 테스트 기간이 전체 데이터보다 클 경우 조정
+if test_days >= total_samples:
+    test_days = max(180, int(total_samples * 0.5))  # 최소 6개월 또는 50%
+    print(f"데이터 부족으로 테스트 기간을 {test_days}일로 조정합니다.")
+
+train_size = total_samples - test_days
 
 X_train = X[:train_size]
 y_train = y[:train_size]
@@ -111,7 +130,7 @@ X_test = X[train_size:]
 y_test = y[train_size:]
 
 print(f"학습 데이터: {len(X_train)}개")
-print(f"백테스트 데이터: {len(X_test)}개")
+print(f"백테스트 데이터: {len(X_test)}개 (약 {len(X_test)/365:.1f}년)")
 
 # PyTorch 텐서로 변환
 X_train = torch.FloatTensor(X_train).to(device)
@@ -157,9 +176,30 @@ backtest_dates = original_df.index[start_backtest_idx:start_backtest_idx + len(p
 
 # 6. 트레이딩 시뮬레이션
 print("\n=== 트레이딩 시뮬레이션 ===")
-initial_capital = 100000  # 초기 자본 10만 달러
+
+# 예측값 분석 및 상대적 임계값 설정
+price_changes = []
+for i in range(len(predictions)):
+    if i < len(actual_prices):
+        current_price = float(actual_prices[i][0])
+        predicted_price = float(predictions[i][0])
+        price_change = (predicted_price - current_price) / current_price
+        price_changes.append(price_change)
+
+print(f"예측 변화율 범위: {min(price_changes)*100:.3f}% ~ {max(price_changes)*100:.3f}%")
+print(f"예측 변화율 평균: {np.mean(price_changes)*100:.3f}%")
+print(f"예측 변화율 표준편차: {np.std(price_changes)*100:.3f}%")
+
+# 상대적 임계값 설정 (상위 30%, 하위 30% 기준)
+buy_threshold = np.percentile(price_changes, 70)  # 상위 30% (상대적으로 덜 하락하는 구간)
+sell_threshold = np.percentile(price_changes, 30)  # 하위 30% (상대적으로 더 하락하는 구간)
+
+print(f"매수 임계값 (상위 30%): {buy_threshold*100:.3f}%")
+print(f"매도 임계값 (하위 30%): {sell_threshold*100:.3f}%")
+
+initial_capital = 100000  # 초기 자본 10만원
 capital = initial_capital
-position = 0  # 0: 현금, 1: 비트코인 보유
+position = 0  # 0: 현금, 1: 테더 보유
 trades = []
 portfolio_values = []
 returns = []
@@ -175,40 +215,41 @@ for i in range(len(predictions)):
         else:
             current_prices.append(original_df.iloc[0]['Close'])
     else:
-        current_prices.append(actual_prices[i])
+        current_prices.append(actual_prices[i][0])
 
 for i in range(len(predictions)):
     current_price = float(current_prices[i])
     predicted_price = float(predictions[i][0])
     actual_future_price = float(actual_prices[i][0])
     
-    # 트레이딩 로직: 1일 후 예측 기반 거래 (+1일 예측에 맞게 조정)
+    # 트레이딩 로직: 5일 후 예측 기반 거래 (더 적극적인 조건)
     price_change_prediction = (predicted_price - current_price) / current_price
     
-    if position == 0 and price_change_prediction > 0.01:  # 매수 신호: 1% 이상 상승 예상
+    # 예측 변화율의 상위/하위 30% 기준으로 거래
+    if position == 0 and price_change_prediction > buy_threshold:  # 매수 신호: 상위 30% 이상 상승 예상
         position = 1
-        btc_amount = capital / current_price
+        usdt_amount = capital / current_price
         trades.append({
             'date': backtest_dates[i],
             'action': 'BUY',
             'price': current_price,
-            'amount': btc_amount,
+            'amount': usdt_amount,
             'capital': capital
         })
-    elif position == 1 and price_change_prediction < -0.005:  # 매도 신호: 0.5% 하락 예상
+    elif position == 1 and price_change_prediction < sell_threshold:  # 매도 신호: 하위 30% 이하 하락 예상
         position = 0
-        capital = btc_amount * current_price
+        capital = usdt_amount * current_price
         trades.append({
             'date': backtest_dates[i],
             'action': 'SELL',
             'price': current_price,
-            'amount': btc_amount,
+            'amount': usdt_amount,
             'capital': capital
         })
     
     # 포트폴리오 가치 계산
     if position == 1:
-        portfolio_value = btc_amount * current_price
+        portfolio_value = usdt_amount * current_price
     else:
         portfolio_value = capital
     
@@ -221,7 +262,7 @@ for i in range(len(predictions)):
 
 # 마지막 포지션 정리
 if position == 1:
-    final_capital = float(btc_amount * current_prices[-1])
+    final_capital = float(usdt_amount * current_prices[-1])
 else:
     final_capital = float(capital)
 
@@ -267,8 +308,8 @@ win_rate = winning_trades / total_trades * 100 if total_trades > 0 else 0
 buy_hold_return = float((current_prices[-1] - current_prices[0]) / current_prices[0] * 100)
 
 print(f"📊 백테스트 기간: {backtest_dates[0].strftime('%Y-%m-%d')} ~ {backtest_dates[-1].strftime('%Y-%m-%d')}")
-print(f"📈 초기 자본: ${initial_capital:,.2f}")
-print(f"💰 최종 자본: ${final_capital:,.2f}")
+print(f"📈 초기 자본: {initial_capital:,.0f}원")
+print(f"💰 최종 자본: {final_capital:,.0f}원")
 print(f"📊 총 수익률: {total_return:.2f}%")
 print(f"📈 연수익률 (CAGR): {cagr*100:.2f}%")
 print(f"📉 최대 낙폭 (MDD): {max_drawdown*100:.2f}%")
@@ -282,26 +323,50 @@ fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
 
 # 1) 포트폴리오 가치 변화
 ax1.plot(backtest_dates, portfolio_values, label='AI 전략', color='blue', linewidth=2)
-buy_hold_values = [initial_capital * (price / current_prices[0]) for price in current_prices]
-ax1.plot(backtest_dates, buy_hold_values, label='Buy & Hold', color='red', linewidth=2)
+
+# Buy & Hold 값 계산 시 형태 문제 해결
+try:
+    buy_hold_values = []
+    initial_price = float(current_prices[0])
+    for price in current_prices:
+        buy_hold_value = initial_capital * (float(price) / initial_price)
+        buy_hold_values.append(buy_hold_value)
+    
+    ax1.plot(backtest_dates, buy_hold_values, label='Buy & Hold', color='red', linewidth=2)
+except Exception as e:
+    print(f"Buy & Hold 차트 그리기 오류: {e}")
+    # Buy & Hold 없이 AI 전략만 표시
+    pass
+
 ax1.set_title('포트폴리오 가치 변화')
-ax1.set_ylabel('포트폴리오 가치 ($)')
+ax1.set_ylabel('포트폴리오 가치 (원)')
 ax1.legend()
 ax1.grid(True)
 
 # 2) 예측 vs 실제 가격
 ax2.plot(backtest_dates, actual_prices.flatten(), label='실제 가격', color='blue', alpha=0.7)
 ax2.plot(backtest_dates, predictions.flatten(), label='예측 가격', color='red', alpha=0.7)
-ax2.set_title('+1일 후 가격 예측 vs 실제')
-ax2.set_ylabel('비트코인 가격 ($)')
+ax2.set_title('+5일 후 테더 코인 가격 예측 vs 실제')
+ax2.set_ylabel('테더 코인 가격 (원)')
 ax2.legend()
 ax2.grid(True)
 
 # 3) 누적 수익률
 cumulative_returns = [(v / initial_capital - 1) * 100 for v in portfolio_values]
-buy_hold_cumulative = [(v / initial_capital - 1) * 100 for v in buy_hold_values]
-ax3.plot(backtest_dates, cumulative_returns, label='AI 전략', color='blue', linewidth=2)
-ax3.plot(backtest_dates, buy_hold_cumulative, label='Buy & Hold', color='red', linewidth=2)
+
+try:
+    buy_hold_cumulative = []
+    for buy_hold_value in buy_hold_values:
+        cumulative_return = (buy_hold_value / initial_capital - 1) * 100
+        buy_hold_cumulative.append(cumulative_return)
+    
+    ax3.plot(backtest_dates, cumulative_returns, label='AI 전략', color='blue', linewidth=2)
+    ax3.plot(backtest_dates, buy_hold_cumulative, label='Buy & Hold', color='red', linewidth=2)
+except Exception as e:
+    print(f"누적 수익률 차트 그리기 오류: {e}")
+    # AI 전략만 표시
+    ax3.plot(backtest_dates, cumulative_returns, label='AI 전략', color='blue', linewidth=2)
+
 ax3.set_title('누적 수익률 비교')
 ax3.set_ylabel('누적 수익률 (%)')
 ax3.legend()
@@ -321,7 +386,7 @@ plt.show()
 # 9. 거래 내역 출력
 print("\n=== 주요 거래 내역 ===")
 for i, trade in enumerate(trades[:10]):  # 처음 10개 거래만 출력
-    print(f"{trade['date'].strftime('%Y-%m-%d')} | {trade['action']} | ${trade['price']:.2f} | 자본: ${trade['capital']:.2f}")
+    print(f"{trade['date'].strftime('%Y-%m-%d')} | {trade['action']} | {trade['price']:,.0f}원 | 자본: {trade['capital']:,.0f}원")
 
 if len(trades) > 10:
     print(f"... 총 {len(trades)}개 거래")
