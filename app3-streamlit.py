@@ -78,13 +78,13 @@ def get_summary_stats(ticker=None):
     # 전체 거래 통계 (buy_sell 컬럼 사용)
     trades_query = f"""
     SELECT 
-        COUNT(*) as total_trades,
-        SUM(CASE WHEN buy_sell = 'buy' THEN 1 ELSE 0 END) as buy_count,
-        SUM(CASE WHEN buy_sell = 'sell' THEN 1 ELSE 0 END) as sell_count,
-        SUM(CASE WHEN buy_sell = 'buy' THEN amount ELSE 0 END) as total_buy_amount,
-        SUM(CASE WHEN buy_sell = 'sell' THEN amount ELSE 0 END) as total_sell_amount,
-        SUM(fee) as total_fees,
-        SUM(profit) as total_profit
+        COALESCE(COUNT(*), 0) as total_trades,
+        COALESCE(SUM(CASE WHEN buy_sell = 'buy' THEN 1 ELSE 0 END), 0) as buy_count,
+        COALESCE(SUM(CASE WHEN buy_sell = 'sell' THEN 1 ELSE 0 END), 0) as sell_count,
+        COALESCE(SUM(CASE WHEN buy_sell = 'buy' THEN amount ELSE 0 END), 0) as total_buy_amount,
+        COALESCE(SUM(CASE WHEN buy_sell = 'sell' THEN amount ELSE 0 END), 0) as total_sell_amount,
+        COALESCE(SUM(fee), 0) as total_fees,
+        COALESCE(SUM(profit), 0) as total_profit
     FROM trades
     WHERE ticker = '{ticker}'
     """
@@ -97,6 +97,18 @@ def get_summary_stats(ticker=None):
     
     trades_stats = pd.read_sql_query(trades_query, conn)
     latest_balance = pd.read_sql_query(balance_query, conn)
+    
+    # 빈 결과인 경우 기본값으로 채우기
+    if trades_stats.empty:
+        trades_stats = pd.DataFrame({
+            'total_trades': [0],
+            'buy_count': [0],
+            'sell_count': [0],
+            'total_buy_amount': [0],
+            'total_sell_amount': [0],
+            'total_fees': [0],
+            'total_profit': [0]
+        })
     
     conn.close()
     return trades_stats, latest_balance
@@ -178,8 +190,15 @@ def main():
     
     # 동적으로 TICKER 가져오기
     TICKER = get_current_ticker()
-    PRICE_CHANGE = 4    # 실제 환경에 맞게 상수 사용
-
+    
+    # 실제 PRICE_CHANGE 값을 그리드 데이터에서 계산
+    grid_df = load_grid_status(TICKER)
+    PRICE_CHANGE = 2  # 기본값
+    if not grid_df.empty and len(grid_df) >= 2:
+        # 연속된 두 그리드의 매수목표가 차이로 PRICE_CHANGE 계산
+        price_diff = grid_df['buy_price_target'].iloc[0] - grid_df['buy_price_target'].iloc[1]
+        PRICE_CHANGE = abs(price_diff)
+    
     # 현재가 가져오기 (이미 get_summary_stats 등에서 사용 중이면 재활용)
     current_price = None
     try:
@@ -204,19 +223,24 @@ def main():
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
+            total_trades = trades_stats['total_trades'].iloc[0] if not trades_stats.empty else 0
+            buy_count = trades_stats['buy_count'].iloc[0] if not trades_stats.empty else 0
+            sell_count = trades_stats['sell_count'].iloc[0] if not trades_stats.empty else 0
+            
             st.metric(
                 "총 거래 횟수",
-                f"{trades_stats['total_trades'].iloc[0]:,}회",
-                f"매수: {trades_stats['buy_count'].iloc[0]:,}회 / 매도: {trades_stats['sell_count'].iloc[0]:,}회"
+                f"{total_trades:,}회",
+                f"매수: {buy_count:,}회 / 매도: {sell_count:,}회"
             )
         
         with col2:
-            total_profit = trades_stats['total_profit'].iloc[0]
+            total_profit = trades_stats['total_profit'].iloc[0] if not trades_stats.empty else 0
+            total_fees = trades_stats['total_fees'].iloc[0] if not trades_stats.empty else 0
             profit_color = "normal" if total_profit >= 0 else "inverse"
             st.metric(
                 "총 수익",
                 f"{total_profit:,.0f}원",
-                f"수수료: {trades_stats['total_fees'].iloc[0]:,.0f}원",
+                f"수수료: {total_fees:,.0f}원",
                 delta_color=profit_color
             )
         
@@ -261,7 +285,7 @@ def main():
     with grid_container.container():
         # 그리드 현황
         st.subheader("그리드 현황")
-        grid_df = load_grid_status(TICKER)
+        # grid_df는 이미 위에서 로드했으므로 재사용
         
         if not grid_df.empty:
             # 컬럼명 한글로 변경
@@ -290,7 +314,9 @@ def main():
                 try:
                     price = current_price
                     buy_target = float(str(row['매수목표가']).replace('원','').replace(',',''))
-                    if buy_target >= price > (buy_target - PRICE_CHANGE):
+                    buy_min = buy_target - PRICE_CHANGE  # 매수구간 하한
+                    # 실제 매수 조건과 일치: buy_price_min < current_price <= buy_price_target
+                    if buy_min < price <= buy_target:
                         return f"→ {row['구간']}"
                 except Exception:
                     pass
@@ -305,7 +331,9 @@ def main():
                 try:
                     price = current_price
                     buy_target = float(str(row['매수목표가']).replace('원','').replace(',',''))
-                    if buy_target >= price > (buy_target - PRICE_CHANGE):
+                    buy_min = buy_target - PRICE_CHANGE  # 매수구간 하한
+                    # 실제 매수 조건과 일치: buy_price_min < current_price <= buy_price_target
+                    if buy_min < price <= buy_target:
                         return ['color: red'] * len(row)
                 except Exception:
                     pass

@@ -23,14 +23,13 @@ SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")  # 업비트 시크릿 키
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # 디스코드 웹훅 URL
 
 # 실거래 설정
-TICKER = "KRW-USDT"  # 거래할 코인 (단위:티커)
-BASE_PRICE = None  # 기준 가격 (자동 설정됨)
-PRICE_CHANGE = 2  # 가격 변동 기준(단위:원)
-OFFSET_GRID = 5  # 기준가로부터의 구간 오프셋(단위:구간 0<=N<=10) 
-MAX_GRID_COUNT = 10  # 최대 그리드 수(단위:구간 1<=N<=100)
+TICKER = "KRW-XRP"  # 거래할 코인 (단위:티커)
+BASE_PRICE = 3070  # 기준 가격 (사용자입력: 1400, 현재가로 설정: None)
+PRICE_CHANGE = 4  # 가격 변동 기준(단위:원)
+MAX_GRID_COUNT = 20  # 최대 그리드 수(단위:구간 1<=N<=100)
 ORDER_AMOUNT = 10000  # 주문당 금액 (단위:원, 최소주문금액(업비트) 5000원)
-CHECK_INTERVAL = 10  # 가격 체크 간격 (단위:초)
 
+CHECK_INTERVAL = 10  # 가격 체크 간격 (단위:초)
 FEE_RATE = 0.0005  # 거래 수수료(업비트) (0.05%)
 DISCORD_LOGGING = False  # 디스코드 로깅 비활성화
 PLAY_SOUND = True  # 소리 재생 비활성화
@@ -387,21 +386,8 @@ def create_grid_orders(input_base_price=None):
         logger.info(f"현재 시장 가격: {current_market_price:,.2f}원")
         logger.info(f"기준 가격 설정 (현재가 기준): {BASE_PRICE:,.2f}원")
 
-    # 현재가에서 즉시 시장가 매수 실행
-    logger.info("현재가에서 즉시 시장가 매수를 실행합니다.")
-    try:
-        krw_balance = upbit.get_balance("KRW")
-        if krw_balance is None or krw_balance < ORDER_AMOUNT:
-            logger.warning(f"잔액 부족으로 초기 매수 건너뜀 (필요: {ORDER_AMOUNT:,}원, 보유: {krw_balance:,}원)")
-        else:
-            # 즉시 시장가 매수
-            order_response = upbit.buy_market_order(TICKER, ORDER_AMOUNT)
-            if order_response and 'uuid' in order_response:
-                logger.info(f"초기 시장가 매수 완료: {ORDER_AMOUNT:,}원 @ {current_market_price:,.2f}원")
-            else:
-                logger.error("초기 시장가 매수 실패")
-    except Exception as e:
-        logger.error(f"초기 시장가 매수 중 오류: {str(e)}")
+    # 즉시 시장가 매수 제거 - 그리드 조건을 만족할 때만 매수 실행
+    logger.info("그리드 조건을 만족할 때 매수를 실행합니다.")
 
     grid_orders = []
     
@@ -727,9 +713,15 @@ def run_trading():
             logger.error("프로그램 시작 시 현재 가격 조회 실패. 종료합니다.")
             return
 
-        input_base_price_for_grid = temp_current_price
-        logger.info(f"현재 시장 가격: {temp_current_price:,.2f}원")
-        logger.info(f"그리드 기준 가격 설정 (현재가 기준): {input_base_price_for_grid:,.2f}원")
+        # BASE_PRICE가 설정되어 있으면 그 값을 사용, 없으면 현재가 사용
+        if BASE_PRICE is not None:
+            input_base_price_for_grid = BASE_PRICE
+            logger.info(f"현재 시장 가격: {temp_current_price:,.2f}원")
+            logger.info(f"그리드 기준 가격 설정 (사용자 지정): {input_base_price_for_grid:,.2f}원")
+        else:
+            input_base_price_for_grid = temp_current_price
+            logger.info(f"현재 시장 가격: {temp_current_price:,.2f}원")
+            logger.info(f"그리드 기준 가격 설정 (현재가 기준): {input_base_price_for_grid:,.2f}원")
 
         if not create_grid_orders(input_base_price_for_grid):
             logger.error("그리드 주문 생성 실패. 프로그램을 종료합니다.")
