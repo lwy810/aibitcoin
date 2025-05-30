@@ -18,12 +18,40 @@ st.set_page_config(
 def get_db_connection():
     return sqlite3.connect('trading_history.db')
 
+# TICKER를 데이터베이스에서 가져오는 함수 추가
+def get_current_ticker():
+    """데이터베이스에서 현재 사용 중인 TICKER를 가져옵니다."""
+    conn = get_db_connection()
+    try:
+        # grid 테이블에서 최근 ticker 조회
+        query = "SELECT DISTINCT ticker FROM grid ORDER BY timestamp DESC LIMIT 1"
+        result = pd.read_sql_query(query, conn)
+        if not result.empty:
+            return result['ticker'].iloc[0]
+        
+        # grid가 비어있으면 trades에서 조회
+        query = "SELECT DISTINCT ticker FROM trades ORDER BY timestamp DESC LIMIT 1"
+        result = pd.read_sql_query(query, conn)
+        if not result.empty:
+            return result['ticker'].iloc[0]
+        
+        # 둘 다 비어있으면 기본값 반환
+        return "KRW-XRP"
+    except Exception:
+        return "KRW-XRP"
+    finally:
+        conn.close()
+
 # 데이터 로드 함수들
-def load_trades(days=7):
+def load_trades(days=7, ticker=None):
+    if ticker is None:
+        ticker = get_current_ticker()
+    
     conn = get_db_connection()
     query = f"""
     SELECT * FROM trades 
     WHERE timestamp >= datetime('now', '-{days} days')
+    AND ticker = '{ticker}'
     ORDER BY timestamp DESC
     """
     trades_df = pd.read_sql_query(query, conn)
@@ -41,20 +69,24 @@ def load_balance_history(days=7):
     conn.close()
     return balance_df
 
-def get_summary_stats():
+def get_summary_stats(ticker=None):
+    if ticker is None:
+        ticker = get_current_ticker()
+        
     conn = get_db_connection()
     
-    # 전체 거래 통계
-    trades_query = """
+    # 전체 거래 통계 (buy_sell 컬럼 사용)
+    trades_query = f"""
     SELECT 
         COUNT(*) as total_trades,
-        SUM(CASE WHEN type = 'buy' THEN 1 ELSE 0 END) as buy_count,
-        SUM(CASE WHEN type = 'sell' THEN 1 ELSE 0 END) as sell_count,
-        SUM(CASE WHEN type = 'buy' THEN amount ELSE 0 END) as total_buy_amount,
-        SUM(CASE WHEN type = 'sell' THEN amount ELSE 0 END) as total_sell_amount,
+        SUM(CASE WHEN buy_sell = 'buy' THEN 1 ELSE 0 END) as buy_count,
+        SUM(CASE WHEN buy_sell = 'sell' THEN 1 ELSE 0 END) as sell_count,
+        SUM(CASE WHEN buy_sell = 'buy' THEN amount ELSE 0 END) as total_buy_amount,
+        SUM(CASE WHEN buy_sell = 'sell' THEN amount ELSE 0 END) as total_sell_amount,
         SUM(fee) as total_fees,
         SUM(profit) as total_profit
     FROM trades
+    WHERE ticker = '{ticker}'
     """
     
     # 최근 잔고 정보
@@ -69,10 +101,13 @@ def get_summary_stats():
     conn.close()
     return trades_stats, latest_balance
 
-def load_grid_status():
+def load_grid_status(ticker=None):
     """현재 그리드 상태를 가져옵니다."""
+    if ticker is None:
+        ticker = get_current_ticker()
+        
     conn = get_db_connection()
-    query = """
+    query = f"""
     WITH latest_grid AS (
         SELECT 
             grid_level,
@@ -86,6 +121,7 @@ def load_grid_status():
             ROW_NUMBER() OVER (PARTITION BY grid_level ORDER BY timestamp DESC) as rn
         FROM grid 
         WHERE timestamp >= datetime('now', '-1 day')
+        AND ticker = '{ticker}'
     )
     SELECT 
         grid_level,
@@ -140,15 +176,15 @@ def main():
     grid_container = st.empty()
     trades_container = st.empty()
     
-    # 상단에 추가 (main 함수 내)
-    TICKER = "KRW-XRP"  # 실제 환경에 맞게 변수명 맞춰주세요
+    # 동적으로 TICKER 가져오기
+    TICKER = get_current_ticker()
     PRICE_CHANGE = 4    # 실제 환경에 맞게 상수 사용
 
     # 현재가 가져오기 (이미 get_summary_stats 등에서 사용 중이면 재활용)
     current_price = None
     try:
         # balance_history에서 최근 current_price 사용
-        _, latest_balance = get_summary_stats()
+        _, latest_balance = get_summary_stats(TICKER)
         if not latest_balance.empty:
             current_price = latest_balance['current_price'].iloc[0]
     except Exception:
@@ -162,7 +198,7 @@ def main():
         else:
             st.markdown(f"### {TICKER} ({coin_name}) | 현재가: -")
         # 요약 통계 (7일 고정)
-        trades_stats, latest_balance = get_summary_stats()
+        trades_stats, latest_balance = get_summary_stats(TICKER)
         
         # 상단 메트릭
         col1, col2, col3, col4 = st.columns(4)
@@ -207,6 +243,7 @@ def main():
             if not latest_balance.empty:
                 coin_value = latest_balance['coin_balance'].iloc[0] * latest_balance['current_price'].iloc[0]
                 # 이전 코인 가치와 비교
+                balance_df = load_balance_history(7)  # balance_df 정의 추가
                 if not balance_df.empty and len(balance_df) > 1:
                     prev_coin_value = balance_df['coin_balance'].iloc[-2] * balance_df['current_price'].iloc[-2]
                     coin_value_change = coin_value - prev_coin_value
@@ -224,7 +261,7 @@ def main():
     with grid_container.container():
         # 그리드 현황
         st.subheader("그리드 현황")
-        grid_df = load_grid_status()
+        grid_df = load_grid_status(TICKER)
         
         if not grid_df.empty:
             # 컬럼명 한글로 변경
@@ -282,20 +319,20 @@ def main():
     with trades_container.container():
         # 거래 내역
         st.subheader("거래 내역")
-        trades_df = load_trades(7)  # 7일로 고정
+        trades_df = load_trades(7, TICKER)  # TICKER 전달
         
         if not trades_df.empty:
-            # 거래 타입별 색상 설정
-            trades_df['color'] = trades_df['type'].map({'buy': 'red', 'sell': 'blue'})
+            # 거래 타입별 색상 설정 (buy_sell 컬럼 사용)
+            trades_df['color'] = trades_df['buy_sell'].map({'buy': 'red', 'sell': 'blue'})
             
             # 거래 내역 테이블
             trades_df['timestamp'] = pd.to_datetime(trades_df['timestamp'])
             trades_df['timestamp'] = trades_df['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
             
-            # 컬럼명 한글로 변경
+            # 컬럼명 한글로 변경 (buy_sell -> 거래유형)
             trades_df = trades_df.rename(columns={
                 'timestamp': '시간',
-                'type': '거래유형',
+                'buy_sell': '거래유형',
                 'grid_level': '그리드레벨',
                 'price': '가격',
                 'amount': '거래금액',

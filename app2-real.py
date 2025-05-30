@@ -22,15 +22,15 @@ SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")  # 업비트 시크릿 키
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # 디스코드 웹훅 URL
 
 # 실거래 설정
-TICKER = "KRW-XRP"  # 거래할 코인 (단위:티커)
+TICKER = "KRW-USDT"  # 거래할 코인 (단위:티커)
 BASE_PRICE = None  # 기준 가격 (자동 설정됨)
-PRICE_CHANGE = 4  # 가격 변동 기준(단위:원)
-OFFSET_GRID = 4  # 기준가로부터의 구간 오프셋(단위:구간 0<= N <=10)
-ORDER_AMOUNT = 5000  # 주문당 금액 (단위:원, 최소주문금액 5000원)
-MAX_GRID_COUNT = 10  # 최대 그리드 수(단위:구간 1<= N <=100)
+PRICE_CHANGE = 2  # 가격 변동 기준(단위:원)
+OFFSET_GRID = 4  # 기준가로부터의 구간 오프셋(단위:구간 0<=N<=10) 
+MAX_GRID_COUNT = 10  # 최대 그리드 수(단위:구간 1<=N<=100)
+ORDER_AMOUNT = 10000  # 주문당 금액 (단위:원, 최소주문금액(업비트) 5000원)
 CHECK_INTERVAL = 10  # 가격 체크 간격 (단위:초)
     
-FEE_RATE = 0.0005  # 거래 수수료 (0.05%)
+FEE_RATE = 0.0005  # 거래 수수료(업비트) (0.05%)
 DISCORD_LOGGING = False  # 디스코드 로깅 비활성화
 
 # 전역 변수
@@ -89,8 +89,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger()
 file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', 
-                                          datefmt='%Y-%m-%d %H:%M:%S'))
+file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
 logger.addHandler(file_handler)
 logger.info("로깅 설정 완료")
 

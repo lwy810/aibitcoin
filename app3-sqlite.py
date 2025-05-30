@@ -23,16 +23,17 @@ SECRET_KEY = os.environ.get("UPBIT_SECRET_KEY")  # 업비트 시크릿 키
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # 디스코드 웹훅 URL
 
 # 실거래 설정
-TICKER = "KRW-XRP"  # 거래할 코인 (단위:티커)
+TICKER = "KRW-USDT"  # 거래할 코인 (단위:티커)
 BASE_PRICE = None  # 기준 가격 (자동 설정됨)
-PRICE_CHANGE = 4  # 가격 변동 기준(단위:원)
-OFFSET_GRID = 4  # 기준가로부터의 구간 오프셋(단위:구간 0<= N <=MAX_GRID_COUNT)
-ORDER_AMOUNT = 5000  # 주문당 금액 (단위:원, 최소주문금액 5000원)
-MAX_GRID_COUNT = 10  # 최대 그리드 수(단위:구간 1<= N <=100)
+PRICE_CHANGE = 2  # 가격 변동 기준(단위:원)
+OFFSET_GRID = 4  # 기준가로부터의 구간 오프셋(단위:구간 0<=N<=10) 
+MAX_GRID_COUNT = 10  # 최대 그리드 수(단위:구간 1<=N<=100)
+ORDER_AMOUNT = 10000  # 주문당 금액 (단위:원, 최소주문금액(업비트) 5000원)
 CHECK_INTERVAL = 10  # 가격 체크 간격 (단위:초)
-    
-FEE_RATE = 0.0005  # 거래 수수료 (0.05%)
+
+FEE_RATE = 0.0005  # 거래 수수료(업비트) (0.05%)
 DISCORD_LOGGING = False  # 디스코드 로깅 비활성화
+PLAY_SOUND = True  # 소리 재생 비활성화
 
 # 전역 변수
 current_price = 0  # 현재 코인 가격
@@ -53,6 +54,7 @@ def init_db():
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS grid (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticker TEXT,
             grid_level INTEGER,
             buy_price_target REAL,
             sell_price_target REAL,
@@ -68,7 +70,8 @@ def init_db():
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS trades (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT,
+            ticker TEXT,
+            buy_sell TEXT,
             grid_level INTEGER,
             price REAL,
             amount REAL,
@@ -108,19 +111,20 @@ def save_trade(trade_data):
         
         cursor.execute('''
         INSERT INTO trades (
-            timestamp, type, grid_level, price, amount, 
-            volume, fee, profit, profit_percentage
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ticker, buy_sell, grid_level, price, amount, 
+            volume, fee, profit, profit_percentage, timestamp
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            datetime.now(),
-            trade_data['type'],
+            TICKER,  # ticker 추가
+            trade_data['type'],  # buy_sell 컬럼에 type 값 저장
             trade_data['grid_level'],
             trade_data['price'],
             trade_data['amount'],
             trade_data['volume'],
             trade_data.get('fee', 0),
             trade_data.get('profit', 0),
-            trade_data.get('profit_percentage', 0)
+            trade_data.get('profit_percentage', 0),
+            datetime.now()
         ))
         
         conn.commit()
@@ -161,13 +165,13 @@ def save_grid(grid_data):
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         
-        # 해당 그리드 레벨의 최신 레코드 확인
+        # 해당 그리드 레벨의 최신 레코드 확인 (ticker 조건 추가)
         cursor.execute('''
         SELECT id FROM grid 
-        WHERE grid_level = ? 
+        WHERE grid_level = ? AND ticker = ?
         ORDER BY timestamp DESC 
         LIMIT 1
-        ''', (grid_data['level'],))
+        ''', (grid_data['level'], TICKER))
         
         result = cursor.fetchone()
         
@@ -194,14 +198,15 @@ def save_grid(grid_data):
             ))
             logger.info(f"그리드 레벨 {grid_data['level']} 상태 업데이트 완료")
         else:
-            # 기존 레코드가 없으면 새로 삽입
+            # 기존 레코드가 없으면 새로 삽입 (ticker 포함)
             cursor.execute('''
             INSERT INTO grid (
-                grid_level, buy_price_target, sell_price_target,
+                ticker, grid_level, buy_price_target, sell_price_target,
                 order_krw_amount, is_bought, actual_bought_volume,
                 actual_buy_fill_price
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
+                TICKER,  # ticker 추가
                 grid_data['level'],
                 grid_data['buy_price_target'],
                 grid_data['sell_price_target'],
@@ -377,12 +382,16 @@ def create_grid_orders(input_base_price=None):
         BASE_PRICE = input_base_price
         logger.info(f"사용자 지정 기준 가격: {BASE_PRICE:,.2f}원")
     else:
-        BASE_PRICE = current_market_price + (PRICE_CHANGE * OFFSET_GRID)
+        # 현재가를 중심으로 그리드 배치 (현재가를 중간 지점으로)
+        BASE_PRICE = current_market_price
         logger.info(f"현재 시장 가격: {current_market_price:,.2f}원")
-        logger.info(f"기준 가격 설정 (현재가 + {OFFSET_GRID}구간): {BASE_PRICE:,.2f}원")
+        logger.info(f"기준 가격 설정 (현재가 기준): {BASE_PRICE:,.2f}원")
 
     grid_orders = []
+    
+    # 현재가 위아래로 그리드 생성
     for i in range(MAX_GRID_COUNT):
+        # 현재가 아래쪽 그리드들 (매수 구간)
         buy_target_price = BASE_PRICE - (i * PRICE_CHANGE)
         sell_target_price = buy_target_price + PRICE_CHANGE
 
@@ -390,6 +399,7 @@ def create_grid_orders(input_base_price=None):
             'level': i + 1,
             'buy_price_target': buy_target_price,
             'sell_price_target': sell_target_price,
+            'buy_price_min': buy_target_price - PRICE_CHANGE,  # 매수 구간 하한
             'order_krw_amount': ORDER_AMOUNT,
             'is_bought': False,
             'actual_bought_volume': 0.0,
@@ -403,7 +413,7 @@ def create_grid_orders(input_base_price=None):
     logger.info(f"주문당 KRW 금액: {ORDER_AMOUNT:,}원")
     for grid in grid_orders:
         logger.info(
-            f"{grid['level']}차: 매수 목표가 {grid['buy_price_target']:,.2f}원, 매도 목표가 {grid['sell_price_target']:,.2f}원")
+            f"{grid['level']}차: 매수구간 {grid['buy_price_min']:,.2f}~{grid['buy_price_target']:,.2f}원, 매도 목표가 {grid['sell_price_target']:,.2f}원")
 
     logger.info("/create_grid_orders\\n")
     return True
@@ -517,7 +527,8 @@ def buy_coin(grid_level):
         logger.info(f"매수 완료 (L{grid_level}): {actual_bought_volume:.8f} {TICKER} @ {actual_fill_price:,.2f}원 (주문액: {order_krw_amount:,.0f}원, 수수료: {fee_paid_krw:,.2f}원)")
         if DISCORD_LOGGING:
             discord_logger.send(f"매수 완료 (L{grid_level}): {actual_bought_volume:.8f} {TICKER} @ {actual_fill_price:,.2f}원 (주문액: {order_krw_amount:,.0f}원, 수수료: {fee_paid_krw:,.2f}원)", "INFO")
-        play_sound('buy')
+        if PLAY_SOUND:
+            play_sound('buy')
         get_balance()
         logger.info("/buy_coin\\n")
         return True
@@ -634,7 +645,8 @@ def sell_coin(grid_level):
         logger.info(f"레벨 {grid_level} 거래 수익: {profit_for_this_trade:+,.0f}원 ({profit_percentage:+.2f}%)")
         if DISCORD_LOGGING:
             discord_logger.send(f"매도 완료 (L{grid_level}): {volume_to_sell:.8f} {TICKER} @ {actual_fill_price:,.2f}원 (실현금액: {net_sell_krw_received:,.0f}원)\\n수익: {profit_for_this_trade:+,.0f}원 ({profit_percentage:+.2f}%)", "INFO")
-        play_sound('sell')
+        if PLAY_SOUND:
+            play_sound('sell')
         get_balance()
         logger.info("/sell_coin\n")
         return True
@@ -659,9 +671,10 @@ def check_price_and_trade():
     for i, grid in enumerate(grid_orders): # Iterate with index
         level = grid['level'] # level for logging
         
-        # 매수 조건: 현재 가격이 매수 목표가 이하이고 아직 매수되지 않은 경우
-        if not grid['is_bought'] and current_price <= grid['buy_price_target']:
-            logger.info(f"레벨 {level} 매수 조건 충족: 현재가({current_price:,.2f}원) <= 매수 목표가({grid['buy_price_target']:,.2f}원)")
+        # 매수 조건: 현재 가격이 해당 그리드 구간 내에 있고 아직 매수되지 않은 경우
+        if (not grid['is_bought'] and 
+            grid['buy_price_min'] < current_price <= grid['buy_price_target']):
+            logger.info(f"레벨 {level} 매수 조건 충족: 현재가({current_price:,.2f}원)가 구간({grid['buy_price_min']:,.2f}~{grid['buy_price_target']:,.2f}원) 내에 있음")
             buy_coin(level) # buy_coin expects level number (1-indexed)
             time.sleep(1) # 주문 처리 간격
 
@@ -698,9 +711,9 @@ def run_trading():
             logger.error("프로그램 시작 시 현재 가격 조회 실패. 종료합니다.")
             return
 
-        input_base_price_for_grid = temp_current_price + (PRICE_CHANGE * OFFSET_GRID)
+        input_base_price_for_grid = temp_current_price
         logger.info(f"현재 시장 가격: {temp_current_price:,.2f}원")
-        logger.info(f"그리드 기준 가격 자동 설정 (현재가 + {OFFSET_GRID}구간): {input_base_price_for_grid:,.2f}원")
+        logger.info(f"그리드 기준 가격 설정 (현재가 기준): {input_base_price_for_grid:,.2f}원")
 
         if not create_grid_orders(input_base_price_for_grid):
             logger.error("그리드 주문 생성 실패. 프로그램을 종료합니다.")
