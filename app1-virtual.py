@@ -23,7 +23,7 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # 디스코드 웹�
 
 # 거래 설정
 TEST_MODE = True  # 테스트 모드 활성화 (실제 거래 대신 가상 거래)
-TICKER = "KRW-XRP"  # 거래할 코인 (리플)
+TICKER = "KRW-USDT"  # 거래할 코인 (테더)
 BASE_PRICE = None  # 기준 가격 (자동 설정됨)
 PRICE_CHANGE = 2  # 가격 변동 기준 (테스트모드는 2원, 실제 거래는 4원)
 OFFSET_GRID = 4  # 기준가로부터의 구간 오프셋
