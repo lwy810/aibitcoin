@@ -24,7 +24,7 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")  # 디스코드 웹�
 
 # 실거래 설정
 TICKER = "KRW-XRP"  # 거래할 코인 (단위:티커)
-BASE_PRICE = 3070  # 기준 가격 (사용자입력: 1400, 현재가로 설정: None)
+BASE_PRICE = 3120  # 기준 가격 (사용자입력: 1400, 현재가로 설정: None)
 PRICE_CHANGE = 4  # 가격 변동 기준(단위:원)
 MAX_GRID_COUNT = 20  # 최대 그리드 수(단위:구간 1<=N<=100)
 ORDER_AMOUNT = 10000  # 주문당 금액 (단위:원, 최소주문금액(업비트) 5000원)
@@ -41,13 +41,18 @@ grid_orders = []  # 그리드 주문 목록
 trade_history = []  # 거래 내역
 
 # SQLite 데이터베이스 설정
-DB_FILE = 'trading_history.db'
+# 현재 날짜시간으로 고유한 DB 파일명 생성 (예: trading_history_202505311026.db)
+current_datetime = datetime.now().strftime('%Y%m%d%H%M')
+DB_FILE = f'trading_history_{current_datetime}.db'
 
 def init_db():
     """데이터베이스 초기화 및 테이블 생성"""
     try:
+        # 새로운 데이터베이스 파일 생성
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
+        
+        logger.info(f"새로운 데이터베이스 파일 생성: {DB_FILE}")
         
         # GRID(구간) 테이블
         cursor.execute('''

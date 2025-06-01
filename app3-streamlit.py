@@ -6,6 +6,85 @@ from datetime import datetime, timedelta
 import numpy as np
 import time
 from streamlit_autorefresh import st_autorefresh  # 자동 새로고침 추가
+import streamlit.components.v1 as components  # JavaScript 실행용
+import glob  # 파일 패턴 검색용
+import os  # 파일 시스템 접근용
+
+# 전역 설정
+REFRESH_INTERVAL = 10  # 자동 새로고침 간격 (초)
+
+# 가장 최근 DB 파일 찾기
+def find_latest_db_file():
+    """현재 폴더에서 가장 최근의 trading_history_*.db 파일을 찾습니다."""
+    db_files = glob.glob('trading_history_*.db')
+    if not db_files:
+        return None
+    
+    # 파일명으로 정렬 (YYYYMMDDHHMM 형식이므로 파일명 정렬이 시간순 정렬과 같음)
+    db_files.sort(reverse=True)  # 최신 파일이 첫 번째로
+    return db_files[0]
+
+# 데이터베이스 연결
+def get_db_connection():
+    latest_db = find_latest_db_file()
+    if latest_db is None:
+        st.error("trading_history_*.db 파일을 찾을 수 없습니다. 거래 프로그램을 먼저 실행해주세요.")
+        st.stop()
+    
+    return sqlite3.connect(latest_db)
+
+# 스크롤 위치 관리 함수들
+def setup_scroll_save():
+    """스크롤 이벤트 리스너를 설정하여 스크롤할 때마다 즉시 저장"""
+    components.html(
+        """
+        <script>
+        // 스크롤 이벤트 리스너 추가 (중복 방지)
+        if (!window.scrollListenerAdded) {
+            window.addEventListener('scroll', function() {
+                localStorage.setItem('scrollPosition', window.pageYOffset.toString());
+            });
+            window.scrollListenerAdded = true;
+        }
+        </script>
+        """,
+        height=0
+    )
+
+def restore_scroll_position():
+    """저장된 스크롤 위치로 복원 및 스크롤 이벤트 리스너 설정"""
+    components.html(
+        """
+        <script>
+        // 저장된 스크롤 위치로 복원
+        window.onload = function() {
+            setTimeout(function() {
+                const savedPosition = localStorage.getItem('scrollPosition');
+                if (savedPosition) {
+                    window.scrollTo(0, parseInt(savedPosition));
+                }
+            }, 100);
+        };
+        
+        // 페이지가 이미 로드된 경우를 위한 즉시 실행
+        const savedPosition = localStorage.getItem('scrollPosition');
+        if (savedPosition) {
+            setTimeout(function() {
+                window.scrollTo(0, parseInt(savedPosition));
+            }, 100);
+        }
+        
+        // 스크롤 이벤트 리스너 추가 (중복 방지)
+        if (!window.scrollListenerAdded) {
+            window.addEventListener('scroll', function() {
+                localStorage.setItem('scrollPosition', window.pageYOffset.toString());
+            });
+            window.scrollListenerAdded = true;
+        }
+        </script>
+        """,
+        height=0
+    )
 
 # 페이지 설정
 st.set_page_config(
@@ -13,10 +92,6 @@ st.set_page_config(
     page_icon="📈",
     layout="wide"
 )
-
-# 데이터베이스 연결
-def get_db_connection():
-    return sqlite3.connect('trading_history.db')
 
 # TICKER를 데이터베이스에서 가져오는 함수 추가
 def get_current_ticker():
@@ -174,19 +249,10 @@ def get_latest_price():
 
 # 메인 대시보드
 def main():
-    st_autorefresh(interval=10 * 1000, key="refresh")  # 10초마다 새로고침
     st.title("📈 업비트 그리드 트레이딩 대시보드")
     
-    # 자동 새로고침 상태 표시
-    refresh_status = st.empty()
-    # 마지막 업데이트 시간 표시
-    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    refresh_status.info(f"마지막 업데이트: {current_time} (10초마다 자동 갱신)")
-    
-    # 컨테이너 생성
-    metrics_container = st.empty()
-    grid_container = st.empty()
-    trades_container = st.empty()
+    # 스크롤 위치 복원
+    restore_scroll_position()
     
     # 동적으로 TICKER 가져오기
     TICKER = get_current_ticker()
@@ -199,10 +265,28 @@ def main():
         price_diff = grid_df['buy_price_target'].iloc[0] - grid_df['buy_price_target'].iloc[1]
         PRICE_CHANGE = abs(price_diff)
     
-    # 현재가 가져오기 (이미 get_summary_stats 등에서 사용 중이면 재활용)
+    # 각 섹션별 컨테이너 생성
+    metrics_container = st.empty()
+    grid_container = st.empty()
+    trades_container = st.empty()
+    
+    # 초기 데이터 로드 및 표시
+    update_dashboard(TICKER, PRICE_CHANGE, grid_df, metrics_container, grid_container, trades_container)
+    
+    # 자동 업데이트 루프
+    while True:
+        time.sleep(REFRESH_INTERVAL)
+        # 새로운 데이터 로드
+        new_grid_df = load_grid_status(TICKER)
+        # 데이터 업데이트
+        update_dashboard(TICKER, PRICE_CHANGE, new_grid_df, metrics_container, grid_container, trades_container)
+
+def update_dashboard(TICKER, PRICE_CHANGE, grid_df, metrics_container, grid_container, trades_container):
+    """대시보드의 각 섹션을 업데이트"""
+    
+    # 현재가 가져오기
     current_price = None
     try:
-        # balance_history에서 최근 current_price 사용
         _, latest_balance = get_summary_stats(TICKER)
         if not latest_balance.empty:
             current_price = latest_balance['current_price'].iloc[0]
@@ -284,12 +368,67 @@ def main():
     
     with grid_container.container():
         # 그리드 현황
-        st.subheader("그리드 현황")
+        current_time_small = datetime.now().strftime('%H:%M:%S')
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; margin-right: 15px;">그리드 현황</h3>
+                <span style="
+                    font-size: 12px; 
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    animation: colorTransition {REFRESH_INTERVAL}s ease-in-out infinite;
+                ">
+                    🔄 {current_time_small} 업데이트됨
+                </span>
+            </div>
+            <style>
+            @keyframes colorTransition {{
+                0% {{ 
+                    background: linear-gradient(45deg, #606060, #505050);
+                }}
+                10% {{
+                    background: linear-gradient(45deg, #666666, #565656);
+                }}
+                20% {{
+                    background: linear-gradient(45deg, #6c6c6c, #5c5c5c);
+                }}
+                30% {{
+                    background: linear-gradient(45deg, #727272, #626262);
+                }}
+                40% {{
+                    background: linear-gradient(45deg, #787878, #686868);
+                }}
+                50% {{
+                    background: linear-gradient(45deg, #7e7e7e, #6e6e6e);
+                }}
+                60% {{
+                    background: linear-gradient(45deg, #848484, #747474);
+                }}
+                70% {{
+                    background: linear-gradient(45deg, #8a8a8a, #7a7a7a);
+                }}
+                80% {{
+                    background: linear-gradient(45deg, #909090, #808080);
+                }}
+                90% {{
+                    background: linear-gradient(45deg, #969696, #868686);
+                }}
+                100% {{ 
+                    background: linear-gradient(45deg, #9c9c9c, #8c8c8c);
+                }}
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
         # grid_df는 이미 위에서 로드했으므로 재사용
         
         if not grid_df.empty:
             # 컬럼명 한글로 변경
-            grid_df = grid_df.rename(columns={
+            grid_df_display = grid_df.copy()
+            grid_df_display = grid_df_display.rename(columns={
                 'grid_level': '구간',
                 'buy_price_target': '매수목표가',
                 'sell_price_target': '매도목표가',
@@ -301,28 +440,30 @@ def main():
             })
             
             # 데이터 포맷팅
-            grid_df['매수목표가'] = grid_df['매수목표가'].apply(lambda x: f"{x:,.2f}원")
-            grid_df['매도목표가'] = grid_df['매도목표가'].apply(lambda x: f"{x:,.2f}원")
-            grid_df['주문금액'] = grid_df['주문금액'].apply(lambda x: f"{x:,.0f}원")
-            grid_df['매수수량'] = grid_df['매수수량'].apply(lambda x: f"{x:.8f}" if x > 0 else "-")
-            grid_df['매수가격'] = grid_df['매수가격'].apply(lambda x: f"{x:,.2f}원" if x > 0 else "-")
-            grid_df['매수상태'] = grid_df['매수상태'].apply(lambda x: "매수완료" if x else "대기중")
-            grid_df['최종업데이트'] = pd.to_datetime(grid_df['최종업데이트']).dt.strftime('%Y-%m-%d %H:%M:%S')
+            grid_df_display['매수목표가'] = grid_df_display['매수목표가'].apply(lambda x: f"{x:,.2f}원")
+            grid_df_display['매도목표가'] = grid_df_display['매도목표가'].apply(lambda x: f"{x:,.2f}원")
+            grid_df_display['주문금액'] = grid_df_display['주문금액'].apply(lambda x: f"{x:,.0f}원")
+            grid_df_display['매수수량'] = grid_df_display['매수수량'].apply(lambda x: f"{x:.8f}" if x > 0 else "-")
+            grid_df_display['매수가격'] = grid_df_display['매수가격'].apply(lambda x: f"{x:,.2f}원" if x > 0 else "-")
+            grid_df_display['매수상태'] = grid_df_display['매수상태'].apply(lambda x: "매수완료" if x else "대기중")
+            grid_df_display['최종업데이트'] = pd.to_datetime(grid_df_display['최종업데이트']).dt.strftime('%Y-%m-%d %H:%M:%S')
             
             # 구간 컬럼에 화살표 추가
             def add_arrow_to_current_grid(row):
                 try:
                     price = current_price
                     buy_target = float(str(row['매수목표가']).replace('원','').replace(',',''))
-                    buy_min = buy_target - PRICE_CHANGE  # 매수구간 하한
-                    # 실제 매수 조건과 일치: buy_price_min < current_price <= buy_price_target
-                    if buy_min < price <= buy_target:
+                    sell_target = float(str(row['매도목표가']).replace('원','').replace(',',''))
+                    
+                    # 현재가가 해당 그리드의 가격 범위에 있는지 확인
+                    # 그리드 범위: 매수목표가 < 현재가 <= 매도목표가
+                    if buy_target < price <= sell_target:
                         return f"→ {row['구간']}"
                 except Exception:
                     pass
                 return str(row['구간'])  # 항상 문자열로 반환
 
-            grid_df['구간'] = grid_df.apply(add_arrow_to_current_grid, axis=1).astype(str)
+            grid_df_display['구간'] = grid_df_display.apply(add_arrow_to_current_grid, axis=1).astype(str)
 
             # 표시할 컬럼 선택
             display_columns = ['구간', '매수목표가', '매도목표가', '주문금액', '매수상태', '매수수량', '매수가격', '최종업데이트']
@@ -331,22 +472,87 @@ def main():
                 try:
                     price = current_price
                     buy_target = float(str(row['매수목표가']).replace('원','').replace(',',''))
-                    buy_min = buy_target - PRICE_CHANGE  # 매수구간 하한
-                    # 실제 매수 조건과 일치: buy_price_min < current_price <= buy_price_target
-                    if buy_min < price <= buy_target:
+                    sell_target = float(str(row['매도목표가']).replace('원','').replace(',',''))
+                    
+                    # 현재가가 해당 그리드의 가격 범위에 있는지 확인
+                    # 그리드 범위: 매수목표가 < 현재가 <= 매도목표가
+                    if buy_target < price <= sell_target:
                         return ['color: red'] * len(row)
                 except Exception:
                     pass
                 return [''] * len(row)
 
-            styled_grid = grid_df[display_columns].style.apply(highlight_current_grid, axis=1)
-            st.write(styled_grid)
+            styled_grid = grid_df_display[display_columns].style.apply(highlight_current_grid, axis=1)
+            
+            # 행 수에 따라 높이 계산 (헤더 + 각 행 * 35픽셀 + 여백)
+            table_height = min(len(grid_df_display) * 35 + 50, 800)  # 최대 800픽셀
+            
+            st.dataframe(
+                styled_grid,
+                use_container_width=True,
+                height=table_height,
+                hide_index=True
+            )
         else:
             st.info("현재 활성화된 그리드가 없습니다.")
     
     with trades_container.container():
         # 거래 내역
-        st.subheader("거래 내역")
+        current_time_small = datetime.now().strftime('%H:%M:%S')
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; margin-right: 15px;">거래 내역</h3>
+                <span style="
+                    font-size: 12px; 
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    animation: colorTransition {REFRESH_INTERVAL}s ease-in-out infinite;
+                ">
+                    📈 {current_time_small} 업데이트됨
+                </span>
+            </div>
+            <style>
+            @keyframes colorTransition {{
+                0% {{ 
+                    background: linear-gradient(45deg, #606060, #505050);
+                }}
+                10% {{
+                    background: linear-gradient(45deg, #666666, #565656);
+                }}
+                20% {{
+                    background: linear-gradient(45deg, #6c6c6c, #5c5c5c);
+                }}
+                30% {{
+                    background: linear-gradient(45deg, #727272, #626262);
+                }}
+                40% {{
+                    background: linear-gradient(45deg, #787878, #686868);
+                }}
+                50% {{
+                    background: linear-gradient(45deg, #7e7e7e, #6e6e6e);
+                }}
+                60% {{
+                    background: linear-gradient(45deg, #848484, #747474);
+                }}
+                70% {{
+                    background: linear-gradient(45deg, #8a8a8a, #7a7a7a);
+                }}
+                80% {{
+                    background: linear-gradient(45deg, #909090, #808080);
+                }}
+                90% {{
+                    background: linear-gradient(45deg, #969696, #868686);
+                }}
+                100% {{ 
+                    background: linear-gradient(45deg, #9c9c9c, #8c8c8c);
+                }}
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
         trades_df = load_trades(7, TICKER)  # TICKER 전달
         
         if not trades_df.empty:
@@ -380,9 +586,14 @@ def main():
             trades_df['수익률'] = trades_df['수익률'].apply(lambda x: f"{x:+.2f}%" if pd.notnull(x) else "-")
             trades_df['거래수량'] = trades_df['거래수량'].apply(lambda x: f"{x:.8f}")
             
+            # 행 수에 따라 높이 계산 (30행까지는 스크롤 없음, 31행부터 스크롤)
+            max_rows_without_scroll = 30
+            table_height = min(len(trades_df) * 35 + 50, max_rows_without_scroll * 35 + 50)
+            
             st.dataframe(
                 trades_df[display_columns],
                 use_container_width=True,
+                height=table_height,
                 hide_index=True
             )
         else:
