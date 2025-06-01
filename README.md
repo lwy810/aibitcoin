@@ -2,4 +2,5 @@
 ### https://www.youtube.com/c/코딩강사
 
 ![Logo](https://github.com/nissi153/aibitcoin/blob/main/res/thumbnail.png)
+![Logo](https://github.com/nissi153/aibitcoin/blob/main/res/dashboard.png)
 ![Logo](https://github.com/nissi153/aibitcoin/blob/main/res/split.png)
