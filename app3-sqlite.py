@@ -8,7 +8,11 @@ from dotenv import load_dotenv  # 환경변수 관리
 import pyupbit  # 업비트 API 연동
 import requests  # HTTP 요청
 import sys  # 시스템 관련 기능
+
+# Python 3.12 sqlite3 호환성을 위한 설정
 import sqlite3
+sqlite3.register_adapter(datetime, lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))
+sqlite3.register_converter("timestamp", lambda x: datetime.strptime(x.decode(), '%Y-%m-%d %H:%M:%S'))
 
 # Windows 환경에서만 winsound 모듈 import (소리 알림용)
 if sys.platform == 'win32':
@@ -66,7 +70,7 @@ def init_db():
             is_bought BOOLEAN,
             actual_bought_volume REAL,
             actual_buy_fill_price REAL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp TEXT DEFAULT (datetime('now', 'localtime'))
         )
         ''')
         
@@ -83,7 +87,7 @@ def init_db():
             fee REAL,
             profit REAL,
             profit_percentage REAL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp TEXT DEFAULT (datetime('now', 'localtime'))
         )
         ''')
         
@@ -96,7 +100,7 @@ def init_db():
             coin_avg_price REAL,
             total_assets REAL,
             current_price REAL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp TEXT DEFAULT (datetime('now', 'localtime'))
         )
         ''')
         
@@ -128,7 +132,7 @@ def save_trade(trade_data):
             trade_data.get('fee', 0),
             trade_data.get('profit', 0),
             trade_data.get('profit_percentage', 0),
-            datetime.now()
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 문자열로 변환
         ))
         
         conn.commit()
@@ -149,7 +153,7 @@ def save_balance(balance_data):
             coin_avg_price, total_assets, current_price
         ) VALUES (?, ?, ?, ?, ?, ?)
         ''', (
-            datetime.now(),
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'),  # 문자열로 변환
             balance_data['krw'],
             balance_data['coin'],
             balance_data['coin_avg_price'],
@@ -189,7 +193,7 @@ def save_grid(grid_data):
                 is_bought = ?,
                 actual_bought_volume = ?,
                 actual_buy_fill_price = ?,
-                timestamp = CURRENT_TIMESTAMP
+                timestamp = ?
             WHERE id = ?
             ''', (
                 grid_data['buy_price_target'],
@@ -198,6 +202,7 @@ def save_grid(grid_data):
                 grid_data['is_bought'],
                 grid_data['actual_bought_volume'],
                 grid_data['actual_buy_fill_price'],
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),  # 문자열로 변환
                 result[0]
             ))
             logger.info(f"그리드 레벨 {grid_data['level']} 상태 업데이트 완료")
