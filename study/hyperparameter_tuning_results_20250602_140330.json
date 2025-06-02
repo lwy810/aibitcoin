@@ -1,0 +1,2602 @@
+[
+  {
+    "test_id": 51,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0005,
+      "epochs": 70,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6236691529100592,
+    "backtest_results": {
+      "total_return_percent": 1126.7733065381294,
+      "mdd_percent": -76.63081418223085,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 122677.33065381294,
+      "num_trades": 1
+    },
+    "score": 1126.7733065381294
+  },
+  {
+    "test_id": 40,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.0005,
+      "epochs": 70,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6219929321245714,
+    "backtest_results": {
+      "total_return_percent": 626.5169055100763,
+      "mdd_percent": -73.94100664507106,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 72651.69055100763,
+      "num_trades": 1
+    },
+    "score": 626.5169055100763
+  },
+  {
+    "test_id": 62,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6512050926685333,
+    "backtest_results": {
+      "total_return_percent": 596.3292786429053,
+      "mdd_percent": -74.08870598455792,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 69632.92786429053,
+      "num_trades": 18
+    },
+    "score": 596.3292786429053
+  },
+  {
+    "test_id": 4,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.001,
+      "epochs": 30,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6636087497075399,
+    "backtest_results": {
+      "total_return_percent": 517.9984408204813,
+      "mdd_percent": -61.31699380169381,
+      "win_rate": 9.090909090909092,
+      "profit_factor": 0.3954430947546226,
+      "final_capital": 61799.844082048134,
+      "num_trades": 11
+    },
+    "score": 517.9984408204813
+  },
+  {
+    "test_id": 11,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.001,
+      "epochs": 50,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6420183725979017,
+    "backtest_results": {
+      "total_return_percent": 456.6835580404073,
+      "mdd_percent": -74.08870511699087,
+      "win_rate": 25.806451612903224,
+      "profit_factor": 0.06951625007452061,
+      "final_capital": 55668.35580404074,
+      "num_trades": 31
+    },
+    "score": 456.6835580404073
+  },
+  {
+    "test_id": 69,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.002,
+      "epochs": 70,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6047447522481283,
+    "backtest_results": {
+      "total_return_percent": 397.8362274760221,
+      "mdd_percent": -53.73499285638913,
+      "win_rate": 41.37931034482759,
+      "profit_factor": 0.358515190903003,
+      "final_capital": 49783.62274760221,
+      "num_trades": 58
+    },
+    "score": 397.8362274760221
+  },
+  {
+    "test_id": 33,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.005,
+      "epochs": 50,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.14990313226977983,
+    "backtest_results": {
+      "total_return_percent": 295.9214465198705,
+      "mdd_percent": -55.83297555881532,
+      "win_rate": 45.26315789473684,
+      "profit_factor": 0.5471755593085076,
+      "final_capital": 39592.14465198705,
+      "num_trades": 285
+    },
+    "score": 295.9214465198705
+  },
+  {
+    "test_id": 49,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.005,
+      "epochs": 50,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.027195423800984154,
+    "backtest_results": {
+      "total_return_percent": 266.16785410311843,
+      "mdd_percent": -72.53787543319305,
+      "win_rate": 45.83333333333333,
+      "profit_factor": 0.1793118709862072,
+      "final_capital": 36616.785410311844,
+      "num_trades": 120
+    },
+    "score": 266.16785410311843
+  },
+  {
+    "test_id": 13,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5941346983114878,
+    "backtest_results": {
+      "total_return_percent": 222.89428327873287,
+      "mdd_percent": -77.11932706201019,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 32289.428327873287,
+      "num_trades": 81
+    },
+    "score": 222.89428327873287
+  },
+  {
+    "test_id": 94,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 256,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.001,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.11453257004419963,
+    "backtest_results": {
+      "total_return_percent": 206.7333128196494,
+      "mdd_percent": -42.193251724365865,
+      "win_rate": 48.1981981981982,
+      "profit_factor": 0.8977163394330052,
+      "final_capital": 30673.33128196494,
+      "num_trades": 444
+    },
+    "score": 206.7333128196494
+  },
+  {
+    "test_id": 15,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.001,
+      "epochs": 50,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6517716646194458,
+    "backtest_results": {
+      "total_return_percent": 206.35957818811178,
+      "mdd_percent": -73.75635251472706,
+      "win_rate": 2.247191011235955,
+      "profit_factor": 0.0043703356034815784,
+      "final_capital": 30635.957818811177,
+      "num_trades": 89
+    },
+    "score": 206.35957818811178
+  },
+  {
+    "test_id": 78,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.002,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.0009342151567001234,
+    "backtest_results": {
+      "total_return_percent": 205.196090191886,
+      "mdd_percent": -65.61350779748219,
+      "win_rate": 47.02702702702703,
+      "profit_factor": 0.44702290029752306,
+      "final_capital": 30519.6090191886,
+      "num_trades": 370
+    },
+    "score": 205.196090191886
+  },
+  {
+    "test_id": 71,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.001,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.4471472501754761,
+    "backtest_results": {
+      "total_return_percent": 202.09818058570326,
+      "mdd_percent": -73.02339131274206,
+      "win_rate": 38.775510204081634,
+      "profit_factor": 0.12337928920482678,
+      "final_capital": 30209.818058570327,
+      "num_trades": 49
+    },
+    "score": 202.09818058570326
+  },
+  {
+    "test_id": 93,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.001,
+      "epochs": 100,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5917868514855703,
+    "backtest_results": {
+      "total_return_percent": 201.72328455000624,
+      "mdd_percent": -79.9764631125966,
+      "win_rate": 42.22222222222222,
+      "profit_factor": 0.143508726125017,
+      "final_capital": 30172.328455000625,
+      "num_trades": 45
+    },
+    "score": 201.72328455000624
+  },
+  {
+    "test_id": 77,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.001,
+      "epochs": 70,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.600871205329895,
+    "backtest_results": {
+      "total_return_percent": 201.27944967330964,
+      "mdd_percent": -76.45295816291168,
+      "win_rate": 6.7114093959731544,
+      "profit_factor": 0.02070174917946465,
+      "final_capital": 30127.944967330965,
+      "num_trades": 149
+    },
+    "score": 201.27944967330964
+  },
+  {
+    "test_id": 97,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.005,
+      "epochs": 100,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.0003380863662724468,
+    "backtest_results": {
+      "total_return_percent": 198.76784121409378,
+      "mdd_percent": -75.44627299257989,
+      "win_rate": 26.41509433962264,
+      "profit_factor": 0.10033203692457666,
+      "final_capital": 29876.78412140938,
+      "num_trades": 265
+    },
+    "score": 198.76784121409378
+  },
+  {
+    "test_id": 53,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 32,
+      "num_layers": 2,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.005,
+      "epochs": 50,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.595317522684733,
+    "backtest_results": {
+      "total_return_percent": 170.90624566131027,
+      "mdd_percent": -46.00002738769624,
+      "win_rate": 22.727272727272727,
+      "profit_factor": 0.07107707881287897,
+      "final_capital": 27090.624566131028,
+      "num_trades": 44
+    },
+    "score": 170.90624566131027
+  },
+  {
+    "test_id": 6,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.002,
+      "epochs": 70,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.3697295087304982,
+    "backtest_results": {
+      "total_return_percent": 143.90338732198168,
+      "mdd_percent": -73.7607501076716,
+      "win_rate": 22.22222222222222,
+      "profit_factor": 0.04671589812559936,
+      "final_capital": 24390.338732198168,
+      "num_trades": 72
+    },
+    "score": 143.90338732198168
+  },
+  {
+    "test_id": 14,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.001,
+      "epochs": 50,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.36168697152448737,
+    "backtest_results": {
+      "total_return_percent": 142.7218971458923,
+      "mdd_percent": -84.4856588398178,
+      "win_rate": 44.11764705882353,
+      "profit_factor": 0.36563519448971304,
+      "final_capital": 24272.189714589233,
+      "num_trades": 170
+    },
+    "score": 142.7218971458923
+  },
+  {
+    "test_id": 55,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 256,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.001,
+      "epochs": 100,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.034794873727316204,
+    "backtest_results": {
+      "total_return_percent": 132.840599293333,
+      "mdd_percent": -78.5637319459292,
+      "win_rate": 32.74647887323944,
+      "profit_factor": 0.1921007041751709,
+      "final_capital": 23284.0599293333,
+      "num_trades": 284
+    },
+    "score": 132.840599293333
+  },
+  {
+    "test_id": 35,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.001,
+      "epochs": 100,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5874994397163391,
+    "backtest_results": {
+      "total_return_percent": 117.378253021719,
+      "mdd_percent": -74.65053594647893,
+      "win_rate": 11.627906976744185,
+      "profit_factor": 0.015644093591358526,
+      "final_capital": 21737.8253021719,
+      "num_trades": 86
+    },
+    "score": 117.378253021719
+  },
+  {
+    "test_id": 79,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.005,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.3166532019774119,
+    "backtest_results": {
+      "total_return_percent": 115.32276491060351,
+      "mdd_percent": -18.48741471119232,
+      "win_rate": 61.458333333333336,
+      "profit_factor": 1.5775489405628655,
+      "final_capital": 21532.27649106035,
+      "num_trades": 96
+    },
+    "score": 115.32276491060351
+  },
+  {
+    "test_id": 19,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.002,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.07589998220403989,
+    "backtest_results": {
+      "total_return_percent": 110.9206807707579,
+      "mdd_percent": -52.034522804440165,
+      "win_rate": 48.89705882352941,
+      "profit_factor": 0.6367567539156438,
+      "final_capital": 21092.06807707579,
+      "num_trades": 272
+    },
+    "score": 110.9206807707579
+  },
+  {
+    "test_id": 58,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.005,
+      "epochs": 70,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.06600432910702446,
+    "backtest_results": {
+      "total_return_percent": 106.91329675966215,
+      "mdd_percent": -72.14148910696775,
+      "win_rate": 24.840764331210192,
+      "profit_factor": 0.026830336086556203,
+      "final_capital": 20691.329675966215,
+      "num_trades": 157
+    },
+    "score": 106.91329675966215
+  },
+  {
+    "test_id": 95,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0001,
+      "epochs": 50,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6830203912474893,
+    "backtest_results": {
+      "total_return_percent": 103.34337815756207,
+      "mdd_percent": -10.684277979181866,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 20334.337815756207,
+      "num_trades": 1
+    },
+    "score": 103.34337815756207
+  },
+  {
+    "test_id": 26,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.005,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.0369242380062739,
+    "backtest_results": {
+      "total_return_percent": 101.94456570245163,
+      "mdd_percent": -83.82689578874236,
+      "win_rate": 37.0,
+      "profit_factor": 0.16905480063803532,
+      "final_capital": 20194.456570245162,
+      "num_trades": 200
+    },
+    "score": 101.94456570245163
+  },
+  {
+    "test_id": 66,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.005,
+      "epochs": 50,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.4327555149793625,
+    "backtest_results": {
+      "total_return_percent": 93.45038608357929,
+      "mdd_percent": -73.415025092206,
+      "win_rate": 16.842105263157894,
+      "profit_factor": 0.057119064183879804,
+      "final_capital": 19345.03860835793,
+      "num_trades": 190
+    },
+    "score": 93.45038608357929
+  },
+  {
+    "test_id": 99,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.17338071018457413,
+    "backtest_results": {
+      "total_return_percent": 91.90081949591578,
+      "mdd_percent": -74.64676458692881,
+      "win_rate": 35.714285714285715,
+      "profit_factor": 0.21425762461498724,
+      "final_capital": 19190.08194959158,
+      "num_trades": 336
+    },
+    "score": 91.90081949591578
+  },
+  {
+    "test_id": 17,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.005,
+      "epochs": 70,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.17070368925730386,
+    "backtest_results": {
+      "total_return_percent": 88.52706866233068,
+      "mdd_percent": -78.1100690256945,
+      "win_rate": 21.666666666666668,
+      "profit_factor": 0.04661034449024945,
+      "final_capital": 18852.706866233068,
+      "num_trades": 120
+    },
+    "score": 88.52706866233068
+  },
+  {
+    "test_id": 30,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.660308837890625,
+    "backtest_results": {
+      "total_return_percent": 78.91725113952891,
+      "mdd_percent": -47.13196828971081,
+      "win_rate": 14.285714285714285,
+      "profit_factor": 0.7811252113720799,
+      "final_capital": 17891.725113952893,
+      "num_trades": 7
+    },
+    "score": 78.91725113952891
+  },
+  {
+    "test_id": 54,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 256,
+      "num_layers": 2,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.001,
+      "epochs": 100,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5155036995808283,
+    "backtest_results": {
+      "total_return_percent": 74.73651008178412,
+      "mdd_percent": -82.86171919376646,
+      "win_rate": 38.46153846153847,
+      "profit_factor": 0.19549644606732383,
+      "final_capital": 17473.65100817841,
+      "num_trades": 221
+    },
+    "score": 74.73651008178412
+  },
+  {
+    "test_id": 43,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5306630531946818,
+    "backtest_results": {
+      "total_return_percent": 73.2595814570312,
+      "mdd_percent": -42.8983659431314,
+      "win_rate": 25.0,
+      "profit_factor": 0.2727178514373598,
+      "final_capital": 17325.95814570312,
+      "num_trades": 36
+    },
+    "score": 73.2595814570312
+  },
+  {
+    "test_id": 21,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.002,
+      "epochs": 30,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5467837994748895,
+    "backtest_results": {
+      "total_return_percent": 64.30606121535351,
+      "mdd_percent": -85.14107976469572,
+      "win_rate": 40.714285714285715,
+      "profit_factor": 0.3607721205901616,
+      "final_capital": 16430.60612153535,
+      "num_trades": 140
+    },
+    "score": 64.30606121535351
+  },
+  {
+    "test_id": 75,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.001,
+      "epochs": 100,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.46466285983721417,
+    "backtest_results": {
+      "total_return_percent": 63.125562215398936,
+      "mdd_percent": -82.55118284569276,
+      "win_rate": 44.252873563218394,
+      "profit_factor": 0.41481036954923306,
+      "final_capital": 16312.556221539893,
+      "num_trades": 174
+    },
+    "score": 63.125562215398936
+  },
+  {
+    "test_id": 9,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6641234159469604,
+    "backtest_results": {
+      "total_return_percent": 56.28170880320648,
+      "mdd_percent": -66.95228934164584,
+      "win_rate": 2.564102564102564,
+      "profit_factor": 0.009960024923407904,
+      "final_capital": 15628.170880320647,
+      "num_trades": 117
+    },
+    "score": 56.28170880320648
+  },
+  {
+    "test_id": 70,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.001,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.13417549058794975,
+    "backtest_results": {
+      "total_return_percent": 55.94668953412471,
+      "mdd_percent": -79.67036887139433,
+      "win_rate": 40.30612244897959,
+      "profit_factor": 0.29764069748610333,
+      "final_capital": 15594.66895341247,
+      "num_trades": 196
+    },
+    "score": 55.94668953412471
+  },
+  {
+    "test_id": 47,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.002,
+      "epochs": 30,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6358047482513246,
+    "backtest_results": {
+      "total_return_percent": 52.79068836695062,
+      "mdd_percent": -77.15685194542576,
+      "win_rate": 13.043478260869565,
+      "profit_factor": 0.008223325563425933,
+      "final_capital": 15279.068836695062,
+      "num_trades": 46
+    },
+    "score": 52.79068836695062
+  },
+  {
+    "test_id": 18,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6346223950386047,
+    "backtest_results": {
+      "total_return_percent": 46.35992552852769,
+      "mdd_percent": -23.48270304408626,
+      "win_rate": 7.6923076923076925,
+      "profit_factor": 0.0980334969954572,
+      "final_capital": 14635.99255285277,
+      "num_trades": 13
+    },
+    "score": 46.35992552852769
+  },
+  {
+    "test_id": 16,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.002,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.12067351195340355,
+    "backtest_results": {
+      "total_return_percent": 42.98632507310729,
+      "mdd_percent": -73.88128107542413,
+      "win_rate": 24.017467248908297,
+      "profit_factor": 0.10501378042355276,
+      "final_capital": 14298.63250731073,
+      "num_trades": 229
+    },
+    "score": 42.98632507310729
+  },
+  {
+    "test_id": 73,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0005,
+      "epochs": 70,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6007541517416636,
+    "backtest_results": {
+      "total_return_percent": 40.18591454428781,
+      "mdd_percent": -12.497385705794596,
+      "win_rate": 42.857142857142854,
+      "profit_factor": 2.222373223694794,
+      "final_capital": 14018.59145442878,
+      "num_trades": 14
+    },
+    "score": 40.18591454428781
+  },
+  {
+    "test_id": 60,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5842543095350266,
+    "backtest_results": {
+      "total_return_percent": 36.947605713431145,
+      "mdd_percent": -7.2546644213695615,
+      "win_rate": 60.0,
+      "profit_factor": 2.3963619409396113,
+      "final_capital": 13694.760571343115,
+      "num_trades": 5
+    },
+    "score": 36.947605713431145
+  },
+  {
+    "test_id": 52,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 128,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.002,
+      "epochs": 50,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6106505719098178,
+    "backtest_results": {
+      "total_return_percent": 36.43879664254037,
+      "mdd_percent": -25.520138301019145,
+      "win_rate": 21.052631578947366,
+      "profit_factor": 0.13842944731734633,
+      "final_capital": 13643.879664254036,
+      "num_trades": 19
+    },
+    "score": 36.43879664254037
+  },
+  {
+    "test_id": 29,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0005,
+      "epochs": 100,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5694945129481229,
+    "backtest_results": {
+      "total_return_percent": 33.82771620268512,
+      "mdd_percent": -61.9758369130068,
+      "win_rate": 30.0,
+      "profit_factor": 0.18005675074342725,
+      "final_capital": 13382.771620268511,
+      "num_trades": 100
+    },
+    "score": 33.82771620268512
+  },
+  {
+    "test_id": 42,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.001,
+      "epochs": 150,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.51368717036464,
+    "backtest_results": {
+      "total_return_percent": 32.238003790833936,
+      "mdd_percent": -24.40100491210424,
+      "win_rate": 37.03703703703704,
+      "profit_factor": 0.5172487875761955,
+      "final_capital": 13223.800379083394,
+      "num_trades": 27
+    },
+    "score": 32.238003790833936
+  },
+  {
+    "test_id": 98,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.001,
+      "epochs": 70,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.45022319663654675,
+    "backtest_results": {
+      "total_return_percent": 29.800535922141115,
+      "mdd_percent": -63.723525298131364,
+      "win_rate": 41.53846153846154,
+      "profit_factor": 0.3969150522323771,
+      "final_capital": 12980.053592214112,
+      "num_trades": 195
+    },
+    "score": 29.800535922141115
+  },
+  {
+    "test_id": 84,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.005,
+      "epochs": 50,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.3774590681899678,
+    "backtest_results": {
+      "total_return_percent": 26.60069534956525,
+      "mdd_percent": -56.197480146719634,
+      "win_rate": 54.08163265306123,
+      "profit_factor": 0.9349351796795049,
+      "final_capital": 12660.069534956525,
+      "num_trades": 294
+    },
+    "score": 26.60069534956525
+  },
+  {
+    "test_id": 36,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0005,
+      "epochs": 70,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6610341469446818,
+    "backtest_results": {
+      "total_return_percent": 14.955932954718373,
+      "mdd_percent": -1.9387099019993692,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 11495.593295471837,
+      "num_trades": 1
+    },
+    "score": 14.955932954718373
+  },
+  {
+    "test_id": 85,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.0005,
+      "epochs": 70,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6412855784098307,
+    "backtest_results": {
+      "total_return_percent": 13.589954265742998,
+      "mdd_percent": -3.8127340097225515,
+      "win_rate": 66.66666666666666,
+      "profit_factor": 2.72690733049696,
+      "final_capital": 11358.9954265743,
+      "num_trades": 6
+    },
+    "score": 13.589954265742998
+  },
+  {
+    "test_id": 28,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.0005,
+      "epochs": 30,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6736671653660861,
+    "backtest_results": {
+      "total_return_percent": 13.017450370972492,
+      "mdd_percent": -3.4936053697526837,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 11301.74503709725,
+      "num_trades": 1
+    },
+    "score": 13.017450370972492
+  },
+  {
+    "test_id": 23,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.005,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.048421952252586685,
+    "backtest_results": {
+      "total_return_percent": 12.089654964285728,
+      "mdd_percent": -83.44080402473332,
+      "win_rate": 46.07329842931937,
+      "profit_factor": 0.35943048428965,
+      "final_capital": 11208.965496428573,
+      "num_trades": 191
+    },
+    "score": 12.089654964285728
+  },
+  {
+    "test_id": 50,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 128,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0001,
+      "epochs": 30,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6860695860602639,
+    "backtest_results": {
+      "total_return_percent": 11.412861536170494,
+      "mdd_percent": -5.584575881165166,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 11141.28615361705,
+      "num_trades": 1
+    },
+    "score": 11.412861536170494
+  },
+  {
+    "test_id": 57,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 32,
+      "num_layers": 2,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6745159680193121,
+    "backtest_results": {
+      "total_return_percent": 10.580882068161191,
+      "mdd_percent": -4.846074892940488,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 11058.088206816119,
+      "num_trades": 1
+    },
+    "score": 10.580882068161191
+  },
+  {
+    "test_id": 64,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.002,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5045492351055145,
+    "backtest_results": {
+      "total_return_percent": 9.996666607166043,
+      "mdd_percent": -74.57578502593529,
+      "win_rate": 35.0,
+      "profit_factor": 0.18238139219258578,
+      "final_capital": 10999.666660716604,
+      "num_trades": 60
+    },
+    "score": 9.996666607166043
+  },
+  {
+    "test_id": 76,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0001,
+      "epochs": 70,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6782727620818398,
+    "backtest_results": {
+      "total_return_percent": 9.368168329229976,
+      "mdd_percent": -8.05963537767832,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10936.816832922997,
+      "num_trades": 1
+    },
+    "score": 9.368168329229976
+  },
+  {
+    "test_id": 67,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 32,
+      "num_layers": 2,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6179526610807939,
+    "backtest_results": {
+      "total_return_percent": 9.171705667306997,
+      "mdd_percent": -5.180516336313367,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10917.1705667307,
+      "num_trades": 1
+    },
+    "score": 9.171705667306997
+  },
+  {
+    "test_id": 87,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0005,
+      "epochs": 30,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6800537488677285,
+    "backtest_results": {
+      "total_return_percent": 8.307292083195279,
+      "mdd_percent": -7.839868429159913,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10830.729208319528,
+      "num_trades": 1
+    },
+    "score": 8.307292083195279
+  },
+  {
+    "test_id": 38,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.001,
+      "epochs": 50,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6099203626314799,
+    "backtest_results": {
+      "total_return_percent": 7.204942031156297,
+      "mdd_percent": -5.687384621127478,
+      "win_rate": 50.0,
+      "profit_factor": 4.320806484733469,
+      "final_capital": 10720.49420311563,
+      "num_trades": 2
+    },
+    "score": 7.204942031156297
+  },
+  {
+    "test_id": 65,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.001,
+      "epochs": 50,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6207712690035502,
+    "backtest_results": {
+      "total_return_percent": 6.897444248820975,
+      "mdd_percent": -30.900409483820024,
+      "win_rate": 41.66666666666667,
+      "profit_factor": 1.5754314823691655,
+      "final_capital": 10689.744424882098,
+      "num_trades": 12
+    },
+    "score": 6.897444248820975
+  },
+  {
+    "test_id": 72,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5907116929690043,
+    "backtest_results": {
+      "total_return_percent": 6.519727038754063,
+      "mdd_percent": -1.896987015277407,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10651.972703875406,
+      "num_trades": 1
+    },
+    "score": 6.519727038754063
+  },
+  {
+    "test_id": 8,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.4948805471261342,
+    "backtest_results": {
+      "total_return_percent": 5.984343263016235,
+      "mdd_percent": -3.418872170312992,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10598.434326301624,
+      "num_trades": 1
+    },
+    "score": 5.984343263016235
+  },
+  {
+    "test_id": 89,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.001,
+      "epochs": 100,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6442891558011373,
+    "backtest_results": {
+      "total_return_percent": 5.983407221843463,
+      "mdd_percent": -1.9864289691988946,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10598.340722184346,
+      "num_trades": 1
+    },
+    "score": 5.983407221843463
+  },
+  {
+    "test_id": 27,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.001,
+      "epochs": 30,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6749314864476522,
+    "backtest_results": {
+      "total_return_percent": 5.711596772625199,
+      "mdd_percent": -1.2738659930629614,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10571.15967726252,
+      "num_trades": 1
+    },
+    "score": 5.711596772625199
+  },
+  {
+    "test_id": 45,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0005,
+      "epochs": 100,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5202875340526755,
+    "backtest_results": {
+      "total_return_percent": 4.807149481195211,
+      "mdd_percent": -72.04530110170015,
+      "win_rate": 29.629629629629626,
+      "profit_factor": 0.17459384483428086,
+      "final_capital": 10480.714948119521,
+      "num_trades": 81
+    },
+    "score": 4.807149481195211
+  },
+  {
+    "test_id": 1,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0001,
+      "epochs": 100,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6733516951402029,
+    "backtest_results": {
+      "total_return_percent": 4.74904130621806,
+      "mdd_percent": -5.679558572159394,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10474.904130621806,
+      "num_trades": 1
+    },
+    "score": 4.74904130621806
+  },
+  {
+    "test_id": 61,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.002,
+      "epochs": 100,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5601573261347684,
+    "backtest_results": {
+      "total_return_percent": 3.8977519199804376,
+      "mdd_percent": -45.06351725216645,
+      "win_rate": 33.33333333333333,
+      "profit_factor": 0.003461443958950156,
+      "final_capital": 10389.775191998044,
+      "num_trades": 3
+    },
+    "score": 3.8977519199804376
+  },
+  {
+    "test_id": 31,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 256,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.005,
+      "epochs": 70,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6806519031524658,
+    "backtest_results": {
+      "total_return_percent": 2.8188430189229985,
+      "mdd_percent": -2.637739264443395,
+      "win_rate": 100.0,
+      "profit_factor": Infinity,
+      "final_capital": 10281.8843018923,
+      "num_trades": 1
+    },
+    "score": 2.8188430189229985
+  },
+  {
+    "test_id": 96,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0005,
+      "epochs": 100,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6385038549249823,
+    "backtest_results": {
+      "total_return_percent": 2.076441807893352,
+      "mdd_percent": -5.505418130379169,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 10207.644180789335,
+      "num_trades": 1
+    },
+    "score": 2.076441807893352
+  },
+  {
+    "test_id": 12,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6318093339602152,
+    "backtest_results": {
+      "total_return_percent": 1.7007869491624295,
+      "mdd_percent": -5.291580033872423,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 10170.078694916243,
+      "num_trades": 1
+    },
+    "score": 1.7007869491624295
+  },
+  {
+    "test_id": 5,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.005,
+      "epochs": 30,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6159211559729143,
+    "backtest_results": {
+      "total_return_percent": 1.2227423495373295,
+      "mdd_percent": -41.439220053404746,
+      "win_rate": 32.83582089552239,
+      "profit_factor": 0.19244714034373403,
+      "final_capital": 10122.274234953733,
+      "num_trades": 67
+    },
+    "score": 1.2227423495373295
+  },
+  {
+    "test_id": 83,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 256,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.005,
+      "epochs": 70,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.23519591987133026,
+    "backtest_results": {
+      "total_return_percent": 0.21443689610434377,
+      "mdd_percent": -55.610462822740445,
+      "win_rate": 47.49455337690632,
+      "profit_factor": 0.6666323185793951,
+      "final_capital": 10021.443689610434,
+      "num_trades": 459
+    },
+    "score": 0.21443689610434377
+  },
+  {
+    "test_id": 2,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.0001,
+      "epochs": 70,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6923754811286926,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 10,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 32,
+      "num_layers": 2,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6786891420682272,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 22,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6765742003917694,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 24,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0001,
+      "epochs": 100,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.683259121749712,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 25,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 32,
+      "num_layers": 2,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0001,
+      "epochs": 70,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6898002624511719,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 32,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.684243435660998,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 34,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0001,
+      "epochs": 50,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.06,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6922484040260315,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 46,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.005,
+      "epochs": 100,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6932832627069383,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 56,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.0005,
+      "epochs": 30,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6888537406921387,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 59,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.005,
+      "epochs": 50,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6958595785227689,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 81,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.002,
+      "epochs": 30,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6757144133249918,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 82,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.0001,
+      "epochs": 150,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6836276451746622,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 86,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.001,
+      "epochs": 30,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6924506290392443,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 88,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.0001,
+      "epochs": 50,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.689861019452413,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 91,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.002,
+      "epochs": 30,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6928641904484142,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 92,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.001,
+      "epochs": 30,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.35,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6754176616668701,
+    "backtest_results": {
+      "total_return_percent": 0.0,
+      "mdd_percent": 0.0,
+      "win_rate": 0,
+      "profit_factor": 1,
+      "final_capital": 10000,
+      "num_trades": 0
+    },
+    "score": 0.0
+  },
+  {
+    "test_id": 7,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 32,
+      "num_layers": 2,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.002,
+      "epochs": 70,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6021409829457601,
+    "backtest_results": {
+      "total_return_percent": -0.23995129345192254,
+      "mdd_percent": -0.47407014299413186,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 9976.004870654808,
+      "num_trades": 1
+    },
+    "score": -0.23995129345192254
+  },
+  {
+    "test_id": 80,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.001,
+      "epochs": 50,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6527018249034882,
+    "backtest_results": {
+      "total_return_percent": -0.47990258690382687,
+      "mdd_percent": -0.9459203813839356,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 9952.009741309617,
+      "num_trades": 1
+    },
+    "score": -0.47990258690382687
+  },
+  {
+    "test_id": 20,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.001,
+      "epochs": 30,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6603519320487976,
+    "backtest_results": {
+      "total_return_percent": -1.8203957968355098,
+      "mdd_percent": -43.07821450907892,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 9817.960420316449,
+      "num_trades": 10
+    },
+    "score": -1.8203957968355098
+  },
+  {
+    "test_id": 39,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.4,
+      "learning_rate": 0.0005,
+      "epochs": 150,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5932034836574034,
+    "backtest_results": {
+      "total_return_percent": -4.429991394563294,
+      "mdd_percent": -6.697090231877079,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "final_capital": 9557.00086054367,
+      "num_trades": 1
+    },
+    "score": -4.429991394563294
+  },
+  {
+    "test_id": 37,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 32,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.005,
+      "epochs": 70,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.38,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5675968527793884,
+    "backtest_results": {
+      "total_return_percent": -4.6271251864907565,
+      "mdd_percent": -71.02698208418016,
+      "win_rate": 40.42553191489361,
+      "profit_factor": 0.30545618547424874,
+      "final_capital": 9537.287481350924,
+      "num_trades": 47
+    },
+    "score": -4.6271251864907565
+  },
+  {
+    "test_id": 74,
+    "params": {
+      "sequence_length": 10,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0001,
+      "epochs": 30,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.65,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.1,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6818645674249401,
+    "backtest_results": {
+      "total_return_percent": -5.8463633222161295,
+      "mdd_percent": -36.803160980502746,
+      "win_rate": 42.857142857142854,
+      "profit_factor": 0.4820929555715674,
+      "final_capital": 9415.363667778387,
+      "num_trades": 7
+    },
+    "score": -5.8463633222161295
+  },
+  {
+    "test_id": 63,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.002,
+      "epochs": 100,
+      "batch_size": 64,
+      "signal_thresh_buy": 0.6,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.4880492389202118,
+    "backtest_results": {
+      "total_return_percent": -8.944863945758517,
+      "mdd_percent": -85.04167320389485,
+      "win_rate": 10.227272727272728,
+      "profit_factor": 0.013860463566783063,
+      "final_capital": 9105.513605424148,
+      "num_trades": 88
+    },
+    "score": -8.944863945758517
+  },
+  {
+    "test_id": 90,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 128,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.002,
+      "epochs": 50,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.58,
+      "signal_thresh_sell": 0.45,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.6126194000244141,
+    "backtest_results": {
+      "total_return_percent": -13.774211319476217,
+      "mdd_percent": -25.49352731977158,
+      "win_rate": 38.095238095238095,
+      "profit_factor": 0.25293426651439355,
+      "final_capital": 8622.578868052378,
+      "num_trades": 21
+    },
+    "score": -13.774211319476217
+  },
+  {
+    "test_id": 48,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 64,
+      "num_layers": 3,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.001,
+      "epochs": 150,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.08,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.46873465180397034,
+    "backtest_results": {
+      "total_return_percent": -13.813126047529403,
+      "mdd_percent": -20.491293833204928,
+      "win_rate": 57.14285714285714,
+      "profit_factor": 0.6053042440699895,
+      "final_capital": 8618.68739524706,
+      "num_trades": 7
+    },
+    "score": -13.813126047529403
+  },
+  {
+    "test_id": 68,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 128,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.005,
+      "epochs": 30,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.55,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.3272268772125244,
+    "backtest_results": {
+      "total_return_percent": -14.532410216358912,
+      "mdd_percent": -61.51555475075228,
+      "win_rate": 46.454767726161364,
+      "profit_factor": 0.5691936406123487,
+      "final_capital": 8546.758978364109,
+      "num_trades": 409
+    },
+    "score": -14.532410216358912
+  },
+  {
+    "test_id": 44,
+    "params": {
+      "sequence_length": 30,
+      "hidden_dim": 32,
+      "num_layers": 2,
+      "dropout_rate": 0.1,
+      "learning_rate": 0.005,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.4,
+      "stop_loss_pct": 0.04,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.009806166275997053,
+    "backtest_results": {
+      "total_return_percent": -18.73441008074114,
+      "mdd_percent": -83.48062686104593,
+      "win_rate": 39.1566265060241,
+      "profit_factor": 0.24637942091652992,
+      "final_capital": 8126.558991925886,
+      "num_trades": 332
+    },
+    "score": -18.73441008074114
+  },
+  {
+    "test_id": 3,
+    "params": {
+      "sequence_length": 25,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout_rate": 0.5,
+      "learning_rate": 0.005,
+      "epochs": 30,
+      "batch_size": 16,
+      "signal_thresh_buy": 0.7,
+      "signal_thresh_sell": 0.42,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.5252674086527391,
+    "backtest_results": {
+      "total_return_percent": -21.836954989828183,
+      "mdd_percent": -64.04363378650741,
+      "win_rate": 32.16783216783217,
+      "profit_factor": 0.2537663118258691,
+      "final_capital": 7816.304501017182,
+      "num_trades": 143
+    },
+    "score": -21.836954989828183
+  },
+  {
+    "test_id": 41,
+    "params": {
+      "sequence_length": 15,
+      "hidden_dim": 256,
+      "num_layers": 3,
+      "dropout_rate": 0.3,
+      "learning_rate": 0.0005,
+      "epochs": 100,
+      "batch_size": 128,
+      "signal_thresh_buy": 0.68,
+      "signal_thresh_sell": 0.3,
+      "stop_loss_pct": 0.12,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.616376797358195,
+    "backtest_results": {
+      "total_return_percent": -25.554793340142766,
+      "mdd_percent": -51.3061877065331,
+      "win_rate": 40.0,
+      "profit_factor": 0.4383279969186689,
+      "final_capital": 7444.520665985723,
+      "num_trades": 5
+    },
+    "score": -25.554793340142766
+  },
+  {
+    "test_id": 100,
+    "params": {
+      "sequence_length": 20,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "dropout_rate": 0.2,
+      "learning_rate": 0.001,
+      "epochs": 150,
+      "batch_size": 32,
+      "signal_thresh_buy": 0.62,
+      "signal_thresh_sell": 0.32,
+      "stop_loss_pct": 0.05,
+      "transaction_cost_pct": 0.0005
+    },
+    "final_loss": 0.48482735590501264,
+    "backtest_results": {
+      "total_return_percent": -71.9922630553419,
+      "mdd_percent": -72.09788381687885,
+      "win_rate": 8.695652173913043,
+      "profit_factor": 0.029843433300188436,
+      "final_capital": 2800.77369446581,
+      "num_trades": 46
+    },
+    "score": -71.9922630553419
+  }
+]
