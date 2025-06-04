@@ -2,10 +2,9 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import numpy as np
 import time
-from streamlit_autorefresh import st_autorefresh  # 자동 새로고침 추가
 import streamlit.components.v1 as components  # JavaScript 실행용
 import glob  # 파일 패턴 검색용
 import os  # 파일 시스템 접근용
@@ -207,8 +206,7 @@ def load_grid_status(ticker=None):
             timestamp,
             ROW_NUMBER() OVER (PARTITION BY grid_level ORDER BY timestamp DESC) as rn
         FROM grid 
-        WHERE timestamp >= datetime('now', '-1 day')
-        AND ticker = '{ticker}'
+        WHERE ticker = '{ticker}'
     )
     SELECT 
         grid_level,
@@ -321,10 +319,33 @@ def update_dashboard(TICKER, PRICE_CHANGE, grid_df, metrics_container, grid_cont
             total_profit = trades_stats['total_profit'].iloc[0] if not trades_stats.empty else 0
             total_fees = trades_stats['total_fees'].iloc[0] if not trades_stats.empty else 0
             profit_color = "normal" if total_profit >= 0 else "inverse"
+            
+            # 그리드 설정액 대비 수익률 계산
+            profit_percentage_on_grid_text = "" 
+            if not grid_df.empty and 'order_krw_amount' in grid_df.columns:
+                # order_krw_amount는 그리드 전체에 동일하다고 가정하고 첫 번째 값을 사용
+                order_krw_amount_value = grid_df['order_krw_amount'].iloc[0] 
+                num_grid_levels = len(grid_df)
+
+                # order_krw_amount_value가 유효한 숫자인지, 0보다 큰지, 그리드 레벨이 있는지 확인
+                if pd.notna(order_krw_amount_value) and order_krw_amount_value > 0 and num_grid_levels > 0:
+                    total_potential_investment = num_grid_levels * order_krw_amount_value
+                    # total_potential_investment가 0이 아닐 때만 계산 (0으로 나누기 방지)
+                    profit_vs_potential_investment_pct = (total_profit / total_potential_investment) * 100 if total_potential_investment != 0 else 0
+                    profit_percentage_on_grid_text = f"그리드 설정액 대비: {profit_vs_potential_investment_pct:+.2f}%"
+                else:
+                    profit_percentage_on_grid_text = "그리드 정보 계산 불가" # 계산에 필요한 정보 부족
+            else:
+                profit_percentage_on_grid_text = "그리드 정보 없음" # grid_df가 비어있거나 필요한 컬럼 부재
+
+            current_delta_text = f"수수료: {total_fees:,.0f}원"
+            if profit_percentage_on_grid_text: # 계산된 수익률 정보가 있으면 추가
+                 current_delta_text += f" | {profit_percentage_on_grid_text}"
+            
             st.metric(
                 "총 수익",
                 f"{total_profit:,.0f}원",
-                f"수수료: {total_fees:,.0f}원",
+                delta=current_delta_text,
                 delta_color=profit_color
             )
         
@@ -368,7 +389,9 @@ def update_dashboard(TICKER, PRICE_CHANGE, grid_df, metrics_container, grid_cont
     
     with grid_container.container():
         # 그리드 현황
-        current_time_small = datetime.now().strftime('%H:%M:%S')
+        kst = timezone(timedelta(hours=9))
+        current_time_kst = datetime.now(kst)
+        current_time_small = current_time_kst.strftime('%H:%M:%S')
         st.markdown(
             f"""
             <div style="display: flex; align-items: center; margin-bottom: 20px;">
@@ -484,13 +507,10 @@ def update_dashboard(TICKER, PRICE_CHANGE, grid_df, metrics_container, grid_cont
 
             styled_grid = grid_df_display[display_columns].style.apply(highlight_current_grid, axis=1)
             
-            # 행 수에 따라 높이 계산 (헤더 + 각 행 * 35픽셀 + 여백)
-            table_height = min(len(grid_df_display) * 35 + 50, 800)  # 최대 800픽셀
-            
+            # 그리드 현황은 모든 행을 표시하도록 height 파라미터 제거
             st.dataframe(
                 styled_grid,
                 use_container_width=True,
-                height=table_height,
                 hide_index=True
             )
         else:
@@ -498,7 +518,9 @@ def update_dashboard(TICKER, PRICE_CHANGE, grid_df, metrics_container, grid_cont
     
     with trades_container.container():
         # 거래 내역
-        current_time_small = datetime.now().strftime('%H:%M:%S')
+        kst = timezone(timedelta(hours=9))
+        current_time_kst = datetime.now(kst)
+        current_time_small = current_time_kst.strftime('%H:%M:%S')
         st.markdown(
             f"""
             <div style="display: flex; align-items: center; margin-bottom: 20px;">
@@ -586,14 +608,9 @@ def update_dashboard(TICKER, PRICE_CHANGE, grid_df, metrics_container, grid_cont
             trades_df['수익률'] = trades_df['수익률'].apply(lambda x: f"{x:+.2f}%" if pd.notnull(x) else "-")
             trades_df['거래수량'] = trades_df['거래수량'].apply(lambda x: f"{x:.8f}")
             
-            # 행 수에 따라 높이 계산 (30행까지는 스크롤 없음, 31행부터 스크롤)
-            max_rows_without_scroll = 30
-            table_height = min(len(trades_df) * 35 + 50, max_rows_without_scroll * 35 + 50)
-            
             st.dataframe(
                 trades_df[display_columns],
                 use_container_width=True,
-                height=table_height,
                 hide_index=True
             )
         else:
