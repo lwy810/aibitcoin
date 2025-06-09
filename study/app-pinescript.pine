@@ -41,22 +41,15 @@ initGrids() =>
         array.push(entryPrices, na)
         array.push(positionQtys, na)
 
-// --- 라인 그리기 함수 (별도 실행) ---
-drawGridLines() =>
-    if true
-        for i = 0 to maxGridCountInput - 1
-            currentBuyLevel = basePriceInput - (i * priceChangeInput)
-            currentSellLevel = currentBuyLevel + priceChangeInput
-            // 라인 플로팅 (차트에 그리드 시각화) - 양방향 확장으로 전체 차트에 표시
-            line.new(bar_index - 50, currentBuyLevel, bar_index, currentBuyLevel, color=color.new(color.red, 70), style=line.style_dashed, extend=extend.both)
-            line.new(bar_index - 50, currentSellLevel, bar_index, currentSellLevel, color=color.new(color.green, 70), style=line.style_dashed, extend=extend.both)
-
-// --- 초기화 실행 ---
+// --- 초기화 및 라인 그리기 ---
 if barstate.isfirst
     initGrids()
-
-// 라인 그리기 실행
-drawGridLines()
+    // 라인 플로팅 (차트에 그리드 시각화) - 전체 차트에 표시
+    for i = 0 to maxGridCountInput - 1
+        currentBuyLevel = basePriceInput - (i * priceChangeInput)
+        currentSellLevel = currentBuyLevel + priceChangeInput
+        line.new(bar_index, currentBuyLevel, bar_index + 1, currentBuyLevel, color=color.new(color.red, 70), style=line.style_dashed, extend=extend.both)
+        line.new(bar_index, currentSellLevel, bar_index + 1, currentSellLevel, color=color.new(color.green, 70), style=line.style_dashed, extend=extend.both)
 
 // --- 매매 로직 (barstate.isconfirmed는 봉 확정 시에만 실행하여 틱 단위 중복 실행 방지) ---
 if barstate.isconfirmed and array.size(buyLevels) > 0 // 그리드가 초기화되었는지 확인
