@@ -282,8 +282,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger()
 file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', 
-                                          datefmt='%Y-%m-%d %H:%M:%S'))
+file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
 logger.addHandler(file_handler)
 logger.info("로깅 설정 완료")
 
