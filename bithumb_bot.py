@@ -71,10 +71,10 @@ apiUrl = 'https://api.bithumb.com'
 
 
 # 상수설정 - 빗썸
-TICKER = "SEI"  # 코인 심볼
-BASE_PRICE = 680  # 기준 가격 (사용자입력: 1400, 현재가로 설정: None)
-PRICE_CHANGE = 9.6  # 가격 변동 기준(단위:원)
-MAX_GRID_COUNT = 50  # 최대 그리드 수(단위:구간 1<=N<=100)
+TICKER = "KRW-DOGE"  # 코인 심볼
+BASE_PRICE = 380  # 기준 가격 (사용자입력: 1400, 현재가로 설정: None)
+PRICE_CHANGE = 7.2  # 가격 변동 기준(단위:원)
+MAX_GRID_COUNT = 25  # 최대 그리드 수(단위:구간 1<=N<=100)
 ORDER_AMOUNT = 10000  # 주문당 금액 (단위:원, 최소주문금액(빗썸) 500원)
 
 FEE_RATE = 0.0004  # 거래 수수료(빗썸) (0.04%)
